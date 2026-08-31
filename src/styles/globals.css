@@ -501,16 +501,6 @@ body {
 .data-table tbody tr:last-child td {
   border-bottom: none;
 }
-  vertical-align: middle;
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tbody tr:hover td {
-  background: rgba(247, 248, 252, 0.8);
-}
 
 /* ============================================================
    SIDEBAR SYSTEM
