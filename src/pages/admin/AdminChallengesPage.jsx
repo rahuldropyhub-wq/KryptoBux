@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { 
   Trophy, PlusCircle, Trash2, CheckCircle, Clock, 
-  Coins, Zap, Edit, Monitor, Droplets, Link2, Users
+  Coins, Zap, Edit, Monitor, Droplets, Link2, Users, Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { StatusBadge } from '@/components/common/Badge';
 
 const initialChallenges = [
@@ -33,7 +34,7 @@ const AdminChallengesPage = () => {
     if (!title) return;
 
     const newC = {
-      id: `CH-${Date.now()}`,
+      id: `CH-${Date.now().toString().slice(-3)}`,
       title,
       type,
       taskCategory,
@@ -58,10 +59,15 @@ const AdminChallengesPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Quests & Challenges Manager</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Quests & Challenges Manager</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+              {challenges.length} Quests
+            </span>
+          </div>
           <p className="page-subtitle">Create and manage daily and weekly quests for community engagement and bonus payouts</p>
         </div>
         <Button 
@@ -69,6 +75,7 @@ const AdminChallengesPage = () => {
           size="sm" 
           leftIcon={<PlusCircle size={15} />}
           onClick={() => setCreateModal(true)}
+          className="shadow-md"
         >
           Create New Challenge
         </Button>
@@ -76,7 +83,7 @@ const AdminChallengesPage = () => {
 
       {/* Challenges Table */}
       <Card title="Active Quest List" subtitle={`Total ${challenges.length} challenges configured`}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
@@ -93,30 +100,34 @@ const AdminChallengesPage = () => {
             </thead>
             <tbody>
               {challenges.map((c) => (
-                <tr key={c.id}>
+                <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
                   <td>
-                    <span className="font-bold text-sm text-[var(--text-primary)] block">{c.title}</span>
-                    <span className="text-[10px] font-mono text-[var(--text-muted)]">{c.id}</span>
+                    <span className="font-extrabold text-xs text-slate-900 block">{c.title}</span>
+                    <span className="text-[10px] font-mono text-slate-400 font-semibold">{c.id}</span>
                   </td>
                   <td>
-                    <span className="badge badge-primary text-xs font-semibold">{c.type}</span>
+                    <span className="badge badge-primary text-[11px] font-bold">{c.type}</span>
                   </td>
-                  <td className="text-xs font-semibold text-[var(--text-secondary)]">{c.taskCategory}</td>
-                  <td className="font-mono text-xs">{c.target} actions</td>
+                  <td className="text-xs font-bold text-slate-600">{c.taskCategory}</td>
+                  <td className="font-mono text-xs font-bold text-slate-900">{c.target} actions</td>
                   <td>
-                    <span className="font-bold text-xs text-[var(--primary)] font-mono">+{c.reward} Coins</span>
+                    <span className="font-bold text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-mono">
+                      +{c.reward} Coins
+                    </span>
                   </td>
                   <td>
-                    <span className="font-bold text-xs text-amber-600 font-mono">+{c.energy} Energy</span>
+                    <span className="font-bold text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 font-mono">
+                      +{c.energy} Energy
+                    </span>
                   </td>
-                  <td className="font-mono text-xs font-semibold">{c.completions} claims</td>
+                  <td className="font-mono text-xs font-bold text-slate-700">{c.completions.toLocaleString()} claims</td>
                   <td>
                     <StatusBadge status={c.status} />
                   </td>
                   <td className="text-right">
                     <button
                       onClick={() => handleDelete(c.id)}
-                      className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors"
+                      className="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 transition-all font-semibold"
                       title="Delete Challenge"
                     >
                       <Trash2 size={14} />
@@ -205,7 +216,7 @@ const AdminChallengesPage = () => {
             </div>
           </div>
 
-          <Button type="submit" variant="primary" className="w-full font-bold">
+          <Button type="submit" variant="primary" className="w-full font-bold shadow-md">
             Publish Challenge
           </Button>
         </form>

@@ -6,6 +6,7 @@ import {
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { formatNumber, formatDateTime } from '@/utils/formatters';
 
 const initialBroadcastHistory = [
@@ -47,10 +48,15 @@ const AdminNotificationsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Push Notification Broadcasts</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Push Notification Broadcasts</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+              In-App Dispatcher
+            </span>
+          </div>
           <p className="page-subtitle">Send instant notification announcements to user dashboards and mobile panels</p>
         </div>
       </div>
@@ -64,7 +70,7 @@ const AdminNotificationsPage = () => {
               <select
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value)}
-                className="input-field text-xs py-2"
+                className="input-field text-xs py-2 bg-white"
               >
                 <option value="All Users">All Registered Users (28,450)</option>
                 <option value="Active Users">Active in Last 7 Days (8,940)</option>
@@ -77,7 +83,7 @@ const AdminNotificationsPage = () => {
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="input-field text-xs py-2"
+                className="input-field text-xs py-2 bg-white"
               >
                 <option value="system">System Announcement</option>
                 <option value="reward">Reward / Event Drop</option>
@@ -111,7 +117,7 @@ const AdminNotificationsPage = () => {
           <Button 
             type="submit" 
             variant="primary" 
-            className="w-full font-bold"
+            className="w-full font-bold shadow-md"
             leftIcon={<Send size={15} />}
             loading={isSending}
           >
@@ -122,7 +128,7 @@ const AdminNotificationsPage = () => {
 
       {/* Broadcast History */}
       <Card title="Broadcast History & Read Rates" subtitle="Past announcements sent to users">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
@@ -135,16 +141,18 @@ const AdminNotificationsPage = () => {
             </thead>
             <tbody>
               {history.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                   <td>
-                    <span className="font-bold text-sm text-[var(--text-primary)]">{item.title}</span>
+                    <span className="font-bold text-xs text-slate-900 block">{item.title}</span>
                   </td>
-                  <td className="text-xs text-[var(--text-secondary)] font-medium">{item.target}</td>
+                  <td className="text-xs text-slate-600 font-medium">{item.target}</td>
                   <td>
                     <span className="badge badge-primary uppercase text-[10px] font-bold">{item.type}</span>
                   </td>
-                  <td className="text-xs text-[var(--text-secondary)]">{formatDateTime(item.sentAt)}</td>
-                  <td className="font-mono text-xs font-bold text-emerald-600">{item.reads}</td>
+                  <td className="text-xs text-slate-500">{formatDateTime(item.sentAt)}</td>
+                  <td className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-2 border border-emerald-200">
+                    {item.reads}
+                  </td>
                 </tr>
               ))}
             </tbody>

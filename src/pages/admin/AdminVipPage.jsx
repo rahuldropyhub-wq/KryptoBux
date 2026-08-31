@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { 
   Diamond, Crown, Save, CheckCircle, Trophy, 
-  Coins, Zap, ShieldCheck
+  Coins, Zap, ShieldCheck, Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { formatNumber } from '@/utils/formatters';
 
 const initialTiers = [
@@ -32,17 +33,22 @@ const AdminVipPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">VIP Levels & Privilege Rules</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">VIP Levels & Privilege Rules</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-50 text-purple-700 border border-purple-200">
+              6 VIP Tiers
+            </span>
+          </div>
           <p className="page-subtitle">Configure VIP qualification thresholds, earning bonuses, daily lucky spins, and fee discounts</p>
         </div>
       </div>
 
       {savedSuccess && (
-        <div className="p-4 bg-green-50 text-green-800 rounded-2xl border border-green-200 flex items-center gap-2 font-bold text-xs">
-          <CheckCircle size={16} className="text-green-600" />
+        <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 flex items-center gap-2 font-bold text-xs">
+          <CheckCircle size={16} className="text-emerald-600" />
           <span>VIP Level criteria and privileges updated successfully!</span>
         </div>
       )}
@@ -50,7 +56,7 @@ const AdminVipPage = () => {
       {/* Tiers Form */}
       <Card title="VIP Club Configuration Matrix" subtitle="Changes apply globally to user earning multipliers">
         <form onSubmit={handleSave} className="space-y-4">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
             <table className="data-table">
               <thead>
                 <tr>
@@ -64,14 +70,14 @@ const AdminVipPage = () => {
               </thead>
               <tbody>
                 {tiers.map((t, idx) => (
-                  <tr key={t.level}>
-                    <td className="font-bold text-xs font-mono">Level {t.level}</td>
+                  <tr key={t.level} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="font-extrabold text-xs font-mono text-slate-900">Level {t.level}</td>
                     <td>
                       <input 
                         type="text" 
                         value={t.name}
                         onChange={(e) => handleUpdateField(idx, 'name', e.target.value)}
-                        className="input-field text-xs font-bold py-1"
+                        className="input-field text-xs font-bold py-1 bg-white"
                       />
                     </td>
                     <td>
@@ -79,7 +85,7 @@ const AdminVipPage = () => {
                         type="number" 
                         value={t.minCoins}
                         onChange={(e) => handleUpdateField(idx, 'minCoins', Number(e.target.value))}
-                        className="input-field text-xs font-mono py-1"
+                        className="input-field text-xs font-mono py-1 bg-white font-semibold"
                       />
                     </td>
                     <td>
@@ -87,7 +93,7 @@ const AdminVipPage = () => {
                         type="number" 
                         value={t.bonus}
                         onChange={(e) => handleUpdateField(idx, 'bonus', e.target.value)}
-                        className="input-field text-xs font-mono py-1 max-w-[80px]"
+                        className="input-field text-xs font-mono py-1 max-w-[90px] text-emerald-700 font-bold bg-white"
                       />
                     </td>
                     <td>
@@ -95,7 +101,7 @@ const AdminVipPage = () => {
                         type="number" 
                         value={t.spins}
                         onChange={(e) => handleUpdateField(idx, 'spins', Number(e.target.value))}
-                        className="input-field text-xs font-mono py-1 max-w-[80px]"
+                        className="input-field text-xs font-mono py-1 max-w-[90px] text-purple-700 font-bold bg-white"
                       />
                     </td>
                     <td>
@@ -104,7 +110,7 @@ const AdminVipPage = () => {
                         step="0.1"
                         value={t.fee}
                         onChange={(e) => handleUpdateField(idx, 'fee', e.target.value)}
-                        className="input-field text-xs font-mono py-1 max-w-[80px]"
+                        className="input-field text-xs font-mono py-1 max-w-[90px] font-bold bg-white"
                       />
                     </td>
                   </tr>
@@ -114,7 +120,7 @@ const AdminVipPage = () => {
           </div>
 
           <div className="pt-4 flex justify-end">
-            <Button type="submit" variant="primary" className="font-bold">
+            <Button type="submit" variant="primary" className="font-bold shadow-md">
               Save VIP Parameters
             </Button>
           </div>

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Shield, ShieldAlert, ShieldCheck, Ban, PlusCircle, 
-  Trash2, Search, CheckCircle, AlertTriangle, Key, Power
+  Trash2, Search, CheckCircle, AlertTriangle, Key, Power,
+  Lock, Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { formatDateTime } from '@/utils/formatters';
 
 const initialBannedIps = [
@@ -58,10 +60,15 @@ const AdminSecurityPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Security & Anti-Fraud Center</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Security & Anti-Fraud Center</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Firewall Active
+            </span>
+          </div>
           <p className="page-subtitle">Configure automated multi-account shields, VPN/Proxy firewalls, and manage IP blacklists</p>
         </div>
         <Button 
@@ -69,6 +76,7 @@ const AdminSecurityPage = () => {
           size="sm" 
           leftIcon={<PlusCircle size={15} />}
           onClick={() => setAddModal(true)}
+          className="shadow-md"
         >
           Blacklist IP Address
         </Button>
@@ -84,19 +92,19 @@ const AdminSecurityPage = () => {
             { key: 'rateLimiting', label: 'API Rate Limiting & Anti-Spam', desc: 'Throttle requests exceeding 60 calls/minute per client token.' },
             { key: 'withdrawalHold', label: 'New Account 24-Hour Cashout Hold', desc: 'Require new accounts to be at least 24 hours old before first crypto withdrawal.' },
           ].map((rule) => (
-            <div key={rule.key} className="p-4 rounded-2xl border bg-[var(--background)] flex items-start justify-between gap-4">
+            <div key={rule.key} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition-all flex items-start justify-between gap-4 shadow-2xs">
               <div>
                 <div className="flex items-center gap-2">
-                  <ShieldCheck size={16} className={securityRules[rule.key] ? 'text-green-600' : 'text-gray-400'} />
-                  <h4 className="font-bold text-xs text-[var(--text-primary)]">{rule.label}</h4>
+                  <ShieldCheck size={17} className={securityRules[rule.key] ? 'text-emerald-600' : 'text-slate-400'} />
+                  <h4 className="font-extrabold text-xs text-slate-900">{rule.label}</h4>
                 </div>
-                <p className="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">{rule.desc}</p>
+                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed font-medium">{rule.desc}</p>
               </div>
 
               <button
                 onClick={() => handleToggleRule(rule.key)}
-                className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors flex-shrink-0 ${
-                  securityRules[rule.key] ? 'bg-green-600 text-white shadow-sm' : 'bg-gray-200 text-gray-700'
+                className={`px-3 py-1.5 rounded-xl font-black text-xs transition-all flex-shrink-0 ${
+                  securityRules[rule.key] ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-200 text-slate-700'
                 }`}
               >
                 {securityRules[rule.key] ? 'Active' : 'Disabled'}
@@ -108,7 +116,7 @@ const AdminSecurityPage = () => {
 
       {/* Blacklisted IPs */}
       <Card title="Global IP Blacklist" subtitle="Blocked IP addresses and automated attack attempts">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
@@ -121,19 +129,19 @@ const AdminSecurityPage = () => {
             </thead>
             <tbody>
               {bannedIps.map((item) => (
-                <tr key={item.ip}>
+                <tr key={item.ip} className="hover:bg-slate-50/80 transition-colors">
                   <td>
-                    <span className="font-mono font-bold text-xs text-red-600 px-2 py-0.5 bg-red-50 rounded-lg">
+                    <span className="font-mono font-bold text-xs text-red-700 px-2.5 py-0.5 bg-red-50 rounded-md border border-red-200">
                       {item.ip}
                     </span>
                   </td>
-                  <td className="text-xs text-[var(--text-primary)] font-medium">{item.reason}</td>
-                  <td className="text-xs text-[var(--text-secondary)]">{formatDateTime(item.added)}</td>
+                  <td className="text-xs text-slate-900 font-semibold">{item.reason}</td>
+                  <td className="text-xs text-slate-500">{formatDateTime(item.added)}</td>
                   <td className="font-mono text-xs font-bold text-slate-700">{item.hits} blocked</td>
                   <td className="text-right">
                     <button
                       onClick={() => handleRemoveIp(item.ip)}
-                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                      className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
                       title="Unban IP"
                     >
                       <Trash2 size={14} />
@@ -174,7 +182,7 @@ const AdminSecurityPage = () => {
             />
           </div>
 
-          <Button type="submit" variant="danger" className="w-full font-bold">
+          <Button type="submit" variant="danger" className="w-full font-bold shadow-md">
             Blacklist IP Now
           </Button>
         </form>

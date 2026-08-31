@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
   Users, Wallet, Download, Monitor, Droplets, TrendingUp, 
-  ShieldCheck, AlertCircle, ArrowUpRight, CheckCircle2, Clock, DollarSign
+  ShieldCheck, AlertCircle, ArrowUpRight, CheckCircle2, Clock, 
+  DollarSign, Activity, Zap, RefreshCw, Sparkles
 } from 'lucide-react';
 import AdminStatCard from '@/components/admin/AdminStatCard';
 import ChartCard from '@/components/admin/ChartCard';
@@ -37,16 +38,21 @@ const recentRegistrations = [
 const AdminDashboardPage = () => {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Admin Console Overview</h1>
-          <p className="page-subtitle">Real-time platform metrics, revenue tracking, pending approvals, and user activity</p>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Executive Control Center</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Systems
+            </span>
+          </div>
+          <p className="page-subtitle">Real-time platform metrics, revenue tracking, pending cashout queue, and system integrity</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Link to={ROUTES.ADMIN_WITHDRAWALS}>
             <Button variant="primary" size="sm" leftIcon={<Download size={14} />}>
-              Process Pending Payouts (3)
+              Process Payouts (3 Pending)
             </Button>
           </Link>
         </div>
@@ -56,7 +62,7 @@ const AdminDashboardPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <AdminStatCard
           label="Total Registered Users"
-          value={28450}
+          value="28,450"
           trend="up"
           trendValue="+14% this month"
           icon={Users}
@@ -64,7 +70,7 @@ const AdminDashboardPage = () => {
         />
         <AdminStatCard
           label="Gross Platform Revenue"
-          value="$14,820"
+          value="$14,820.00"
           trend="up"
           trendValue="+22% this week"
           icon={DollarSign}
@@ -96,42 +102,42 @@ const AdminDashboardPage = () => {
             data={revenueChartData}
             height={230}
             labels={[
-              { label: 'Ad & Sponsor Revenue ($)', color: '#234398' },
-              { label: 'User Payout Claims ($)', color: '#16a34a' },
+              { label: 'Ad & Sponsor Revenue ($)', color: '#2563EB' },
+              { label: 'User Payout Claims ($)', color: '#16A34A' },
             ]}
           />
         </div>
 
         {/* System Health & Security Feed */}
         <div className="space-y-4">
-          <Card title="System Services Health" subtitle="Automated gateway status">
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-green-50 text-green-800 border border-green-100">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-green-600" /> FaucetPay API Gateway
+          <Card title="System Services Health" subtitle="Automated node and API status">
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 text-emerald-800 border border-emerald-200/60">
+                <span className="font-bold flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600" /> FaucetPay API Gateway
                 </span>
-                <span className="font-bold">Online (12ms)</span>
+                <span className="font-mono font-bold text-[11px] bg-white px-2 py-0.5 rounded-md border border-emerald-200">12ms (OK)</span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-green-50 text-green-800 border border-green-100">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-green-600" /> CoinGecko Rates Feed
+              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 text-emerald-800 border border-emerald-200/60">
+                <span className="font-bold flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600" /> CoinGecko Rates Feed
                 </span>
-                <span className="font-bold">Synced</span>
+                <span className="font-mono font-bold text-[11px] bg-white px-2 py-0.5 rounded-md border border-emerald-200">Synced</span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-green-50 text-green-800 border border-green-100">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-green-600" /> Anti-Fraud Multi-IP Guard
+              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 text-emerald-800 border border-emerald-200/60">
+                <span className="font-bold flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600" /> Anti-Fraud Multi-IP Guard
                 </span>
-                <span className="font-bold">Enforcing</span>
+                <span className="font-mono font-bold text-[11px] bg-white px-2 py-0.5 rounded-md border border-emerald-200">Enforcing</span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 text-blue-800 border border-blue-100">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-blue-600" /> Telegram Webhook Bot
+              <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50/70 text-blue-800 border border-blue-200/60">
+                <span className="font-bold flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-blue-600" /> Telegram Webhook Bot
                 </span>
-                <span className="font-bold">Connected</span>
+                <span className="font-mono font-bold text-[11px] bg-white px-2 py-0.5 rounded-md border border-blue-200">Active</span>
               </div>
             </div>
           </Card>
@@ -152,7 +158,7 @@ const AdminDashboardPage = () => {
             </Link>
           }
         >
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
             <table className="data-table">
               <thead>
                 <tr>
@@ -167,13 +173,13 @@ const AdminDashboardPage = () => {
               <tbody>
                 {pendingWithdrawalsQueue.map((wd) => (
                   <tr key={wd.id}>
-                    <td className="font-mono text-xs font-semibold">{wd.id}</td>
-                    <td className="font-semibold text-sm">@{wd.user}</td>
-                    <td className="font-bold font-mono text-sm text-[var(--text-primary)]">{wd.amount}</td>
+                    <td className="font-mono text-xs font-bold text-slate-700">{wd.id}</td>
+                    <td className="font-bold text-xs text-slate-900">@{wd.user}</td>
+                    <td className="font-black font-mono text-xs text-emerald-600">{wd.amount}</td>
                     <td>
-                      <span className="badge badge-primary font-bold text-xs">{wd.currency}</span>
+                      <span className="badge badge-primary font-bold text-[11px]">{wd.currency}</span>
                     </td>
-                    <td className="text-xs text-[var(--text-secondary)]">{wd.time}</td>
+                    <td className="text-xs text-slate-500 font-medium">{wd.time}</td>
                     <td>
                       <StatusBadge status={wd.status} />
                     </td>
@@ -196,7 +202,7 @@ const AdminDashboardPage = () => {
             </Link>
           }
         >
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
             <table className="data-table">
               <thead>
                 <tr>
@@ -211,16 +217,16 @@ const AdminDashboardPage = () => {
                 {recentRegistrations.map((u) => (
                   <tr key={u.id}>
                     <td>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[var(--deep)] text-white flex items-center justify-center font-bold text-[10px]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                           {u.username[0].toUpperCase()}
                         </div>
-                        <span className="font-semibold text-sm text-[var(--text-primary)]">@{u.username}</span>
+                        <span className="font-bold text-xs text-slate-900">@{u.username}</span>
                       </div>
                     </td>
-                    <td className="text-xs text-[var(--text-secondary)]">{u.email}</td>
-                    <td className="font-mono text-xs">{u.ip}</td>
-                    <td className="text-xs text-[var(--text-secondary)]">{u.time}</td>
+                    <td className="text-xs text-slate-600 font-medium">{u.email}</td>
+                    <td className="font-mono text-xs text-slate-700 font-semibold">{u.ip}</td>
+                    <td className="text-xs text-slate-500 font-medium">{u.time}</td>
                     <td>
                       <StatusBadge status={u.status} />
                     </td>

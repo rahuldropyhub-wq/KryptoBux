@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   FileText, Download, TrendingUp, DollarSign, Users, 
-  Wallet, Award, Calendar, BarChart2, CheckCircle
+  Wallet, Award, Calendar, BarChart2, CheckCircle,
+  Sparkles, Layers
 } from 'lucide-react';
 import AdminStatCard from '@/components/admin/AdminStatCard';
 import ChartCard from '@/components/admin/ChartCard';
@@ -27,10 +28,15 @@ const AdminReportsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Financial & Operational Reports</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Financial & Operational Analytics</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+              71.6% Profit Margin
+            </span>
+          </div>
           <p className="page-subtitle">Export revenue performance, user acquisition metrics, and task payout breakdowns</p>
         </div>
         <div className="flex items-center gap-2">
@@ -39,8 +45,9 @@ const AdminReportsPage = () => {
             size="sm" 
             leftIcon={<Download size={14} />}
             onClick={handleDownloadPDF}
+            className="shadow-md"
           >
-            Export Monthly Report (PDF)
+            Export Financial Report (PDF)
           </Button>
         </div>
       </div>
@@ -89,50 +96,50 @@ const AdminReportsPage = () => {
             data={financialChartData}
             height={240}
             labels={[
-              { label: 'Monthly Gross ($)', color: '#234398' }
+              { label: 'Monthly Gross Revenue ($)', color: '#2563EB' }
             ]}
           />
         </div>
 
         {/* Task Revenue Share */}
-        <Card title="Task Revenue Breakdown" subtitle="By earning activity">
+        <Card title="Task Revenue Breakdown" subtitle="By earning activity category">
           <div className="space-y-4 pt-2 text-xs">
-            <div className="space-y-1">
-              <div className="flex justify-between font-semibold">
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold text-slate-700">
                 <span>PTC Sponsored Ads</span>
-                <span className="text-[var(--primary)] font-bold">45% ($6,669)</span>
+                <span className="text-blue-600">45% ($6,669)</span>
               </div>
-              <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[var(--primary)] h-full rounded-full" style={{ width: '45%' }} />
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
+                <div className="bg-blue-600 h-full rounded-full" style={{ width: '45%' }} />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex justify-between font-semibold">
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold text-slate-700">
                 <span>Banner & Native Ads</span>
-                <span className="text-purple-600 font-bold">30% ($4,446)</span>
+                <span className="text-purple-600">30% ($4,446)</span>
               </div>
-              <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
                 <div className="bg-purple-600 h-full rounded-full" style={{ width: '30%' }} />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex justify-between font-semibold">
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold text-slate-700">
                 <span>Shortlinks Network CPC</span>
-                <span className="text-emerald-600 font-bold">15% ($2,223)</span>
+                <span className="text-emerald-600">15% ($2,223)</span>
               </div>
-              <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
                 <div className="bg-emerald-600 h-full rounded-full" style={{ width: '15%' }} />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex justify-between font-semibold">
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold text-slate-700">
                 <span>Popunder & Direct Sponsors</span>
-                <span className="text-amber-600 font-bold">10% ($1,482)</span>
+                <span className="text-amber-600">10% ($1,482)</span>
               </div>
-              <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
                 <div className="bg-amber-600 h-full rounded-full" style={{ width: '10%' }} />
               </div>
             </div>

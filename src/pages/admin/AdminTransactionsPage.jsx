@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   List, Search, Filter, Download, ArrowUpRight, ArrowDownLeft, 
-  Coins, CheckCircle, Clock, AlertTriangle, RefreshCw, Ban
+  Coins, CheckCircle, Clock, AlertTriangle, RefreshCw, Ban,
+  FileSpreadsheet
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
@@ -32,33 +33,38 @@ const AdminTransactionsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Global Platform Ledger</h1>
-          <p className="page-subtitle">Master audit trail of all financial movements, task earnings, deposits, and cashout events</p>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Global Transactions Ledger</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+              Audit Trail
+            </span>
+          </div>
+          <p className="page-subtitle">Master audit trail of all financial movements, task rewards, faucet payouts, and withdrawals</p>
         </div>
         <Button 
           variant="secondary" 
           size="sm" 
           leftIcon={<Download size={14} />}
-          onClick={() => alert('Exporting platform master transaction ledger...')}
+          onClick={() => alert('Exporting platform master transaction ledger to CSV...')}
         >
-          Export Master CSV
+          Export Ledger (CSV)
         </Button>
       </div>
 
       {/* Filter Bar */}
-      <div className="card p-4">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by TxID or username..."
+              placeholder="Search by Transaction ID or username..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-9 text-xs"
+              className="input-field pl-10 text-xs"
             />
           </div>
 
@@ -95,16 +101,16 @@ const AdminTransactionsPage = () => {
 
       {/* Global Table */}
       <Card title="Master Ledger Entries" subtitle={`Showing ${filtered.length} records`}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Tx ID</th>
-                <th>User</th>
-                <th>Type</th>
+                <th>Transaction ID</th>
+                <th>User Account</th>
+                <th>Category</th>
                 <th>Description</th>
-                <th>Amount</th>
-                <th>Time</th>
+                <th>Amount (Coins)</th>
+                <th>Timestamp</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -112,21 +118,25 @@ const AdminTransactionsPage = () => {
               {filtered.map((tx) => {
                 const isPositive = tx.amount > 0;
                 return (
-                  <tr key={tx.id}>
-                    <td className="font-mono text-xs font-semibold">{tx.id}</td>
-                    <td className="font-bold text-sm text-[var(--text-primary)]">@{tx.user}</td>
+                  <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="font-mono text-xs font-bold text-slate-700">{tx.id}</td>
+                    <td className="font-bold text-xs text-slate-900">@{tx.user}</td>
                     <td>
                       <span className="badge badge-primary uppercase text-[10px] font-bold">
                         {tx.type}
                       </span>
                     </td>
-                    <td className="text-xs text-[var(--text-secondary)]">{tx.desc}</td>
+                    <td className="text-xs text-slate-600 font-medium">{tx.desc}</td>
                     <td>
-                      <span className={`font-bold font-mono text-sm ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+                      <span className={`font-mono text-xs font-black px-2 py-0.5 rounded-md ${
+                        isPositive 
+                          ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' 
+                          : 'text-red-700 bg-red-50 border border-red-200'
+                      }`}>
                         {isPositive ? `+${formatNumber(tx.amount)}` : formatNumber(tx.amount)} Coins
                       </span>
                     </td>
-                    <td className="text-xs text-[var(--text-secondary)]">{formatDateTime(tx.time)}</td>
+                    <td className="text-xs text-slate-500">{formatDateTime(tx.time)}</td>
                     <td>
                       <StatusBadge status={tx.status} />
                     </td>

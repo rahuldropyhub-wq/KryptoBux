@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
   Settings, Save, CheckCircle, Globe, Mail, 
-  Key, Shield, AlertTriangle, Power, Coins
+  Key, Shield, AlertTriangle, Power, Coins, Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 
 const AdminSettingsPage = () => {
   const [siteName, setSiteName] = useState('Krypto Bux');
@@ -34,17 +35,22 @@ const AdminSettingsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Platform System Settings</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Platform System Settings</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+              Global Sync
+            </span>
+          </div>
           <p className="page-subtitle">Configure global exchange rates, payment gateways, SMTP mail servers, and platform maintenance status</p>
         </div>
       </div>
 
       {savedSuccess && (
-        <div className="p-4 bg-green-50 text-green-800 rounded-2xl border border-green-200 flex items-center gap-2 font-bold text-xs">
-          <CheckCircle size={16} className="text-green-600" />
+        <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 flex items-center gap-2 font-bold text-xs">
+          <CheckCircle size={16} className="text-emerald-600" />
           <span>System settings updated and synchronized across all servers!</span>
         </div>
       )}
@@ -52,7 +58,7 @@ const AdminSettingsPage = () => {
       {/* Main Settings Form */}
       <form onSubmit={handleSave} className="space-y-6">
         {/* Core Platform Identity */}
-        <Card title="General Identity & Exchange Rates" subtitle="Core branding and coin valuations">
+        <Card title="General Identity & Coin Valuations" subtitle="Core branding and coin valuations">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="input-label">Platform Name</label>
@@ -83,10 +89,10 @@ const AdminSettingsPage = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border-light)]">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs">
               <div>
-                <span className="font-bold text-xs text-[var(--text-primary)] block">Maintenance Mode</span>
-                <span className="text-[11px] text-[var(--text-secondary)]">Temporarily pause public earning</span>
+                <span className="font-extrabold text-xs text-slate-900 block">Maintenance Mode</span>
+                <span className="text-[11px] text-slate-500 font-medium">Temporarily pause public earning</span>
               </div>
               <input
                 type="checkbox"

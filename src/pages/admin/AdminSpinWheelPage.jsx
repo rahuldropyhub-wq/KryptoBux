@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  RefreshCw, Trophy, Save, CheckCircle, Gift, Zap, Coins
+  RefreshCw, Trophy, Save, CheckCircle, Gift, Zap, Coins,
+  Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 
 const initialSegments = [
   { id: 0, label: '50 Coins', value: 50, type: 'coins', weight: 40 },
@@ -34,25 +36,30 @@ const AdminSpinWheelPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Lucky Spin Wheel Management</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Lucky Spin Wheel Management</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+              8 Prize Slots
+            </span>
+          </div>
           <p className="page-subtitle">Configure 8-segment prize values, probability weights, and energy exchange rates</p>
         </div>
       </div>
 
       {savedSuccess && (
-        <div className="p-4 bg-green-50 text-green-800 rounded-2xl border border-green-200 flex items-center gap-2 font-bold text-xs">
-          <CheckCircle size={16} className="text-green-600" />
-          <span>Spin wheel prize configuration saved!</span>
+        <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 flex items-center gap-2 font-bold text-xs">
+          <CheckCircle size={16} className="text-emerald-600" />
+          <span>Spin wheel prize configuration saved successfully!</span>
         </div>
       )}
 
       {/* Segments Editor Table */}
       <Card title="Wheel Prize Segments (8 Slots)" subtitle="Weights determine probability of winning">
         <form onSubmit={handleSave} className="space-y-4">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
             <table className="data-table">
               <thead>
                 <tr>
@@ -65,21 +72,21 @@ const AdminSpinWheelPage = () => {
               </thead>
               <tbody>
                 {segments.map((s) => (
-                  <tr key={s.id}>
-                    <td className="font-bold text-xs font-mono">Slot {s.id + 1}</td>
+                  <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="font-extrabold text-xs font-mono text-slate-900">Slot {s.id + 1}</td>
                     <td>
                       <input 
                         type="text" 
                         value={s.label}
                         onChange={(e) => handleUpdate(s.id, 'label', e.target.value)}
-                        className="input-field text-xs font-bold py-1"
+                        className="input-field text-xs font-bold py-1 bg-white"
                       />
                     </td>
                     <td>
                       <select
                         value={s.type}
                         onChange={(e) => handleUpdate(s.id, 'type', e.target.value)}
-                        className="input-field text-xs py-1"
+                        className="input-field text-xs py-1 bg-white"
                       >
                         <option value="coins">Coins</option>
                         <option value="energy">Energy</option>
@@ -92,7 +99,7 @@ const AdminSpinWheelPage = () => {
                         type="number" 
                         value={s.value}
                         onChange={(e) => handleUpdate(s.id, 'value', Number(e.target.value))}
-                        className="input-field text-xs font-mono py-1 max-w-[100px]"
+                        className="input-field text-xs font-mono py-1 max-w-[110px] font-bold text-emerald-700 bg-white"
                       />
                     </td>
                     <td>
@@ -100,7 +107,7 @@ const AdminSpinWheelPage = () => {
                         type="number" 
                         value={s.weight}
                         onChange={(e) => handleUpdate(s.id, 'weight', Number(e.target.value))}
-                        className="input-field text-xs font-mono py-1 max-w-[80px]"
+                        className="input-field text-xs font-mono py-1 max-w-[90px] font-bold bg-white"
                       />
                     </td>
                   </tr>
@@ -109,18 +116,18 @@ const AdminSpinWheelPage = () => {
             </table>
           </div>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--border-light)]">
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
             <div className="flex items-center gap-3">
               <label className="input-label mb-0">Energy per Extra Spin:</label>
               <input 
                 type="number" 
                 value={energyExchangeRate}
                 onChange={(e) => setEnergyExchangeRate(e.target.value)}
-                className="input-field max-w-[120px] text-xs font-bold"
+                className="input-field max-w-[120px] text-xs font-bold font-mono"
               />
             </div>
 
-            <Button type="submit" variant="primary" className="font-bold">
+            <Button type="submit" variant="primary" className="font-bold shadow-md">
               Save Wheel Settings
             </Button>
           </div>

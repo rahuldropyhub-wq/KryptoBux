@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Download, Check, X, Search, Filter, ShieldCheck, 
-  Clock, CheckCircle, AlertTriangle, ExternalLink, RefreshCw
+  Clock, CheckCircle, AlertTriangle, ExternalLink, RefreshCw,
+  Wallet, DollarSign, CheckCircle2, ArrowRight
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { StatusBadge } from '@/components/common/Badge';
 import { formatNumber, formatDateTime } from '@/utils/formatters';
 
@@ -30,7 +32,7 @@ const AdminWithdrawalsPage = () => {
 
   const filtered = withdrawals.filter((w) => {
     const matchesSearch = w.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      w.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      w.user.toLowerCase().includes(searchTerm.toLowerCase()) || 
       w.address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || w.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -62,11 +64,18 @@ const AdminWithdrawalsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Withdrawal Approval Queue</h1>
-          <p className="page-subtitle">Review, approve, broadcast, or reject cryptocurrency cashout requests</p>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Withdrawal Approval Queue</h1>
+            {pendingCount > 0 && (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-50 text-amber-700 border border-amber-200">
+                {pendingCount} Pending Action
+              </span>
+            )}
+          </div>
+          <p className="page-subtitle">Review, broadcast on-chain or FaucetPay micro-payouts, or reject and refund coins</p>
         </div>
         {pendingCount > 0 && (
           <Button 
@@ -74,6 +83,7 @@ const AdminWithdrawalsPage = () => {
             size="sm" 
             leftIcon={<Check size={14} />}
             onClick={handleBatchApprove}
+            className="shadow-md"
           >
             Batch Approve All Pending ({pendingCount})
           </Button>
@@ -82,34 +92,41 @@ const AdminWithdrawalsPage = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card p-4 stat-card stat-card-accent-blue">
-          <p className="stat-card-label">Pending Approval</p>
-          <p className="stat-card-value text-yellow-600">{pendingCount} Requests</p>
-          <p className="stat-card-sub">≈ $80.00 USD value</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-deep">
-          <p className="stat-card-label">Processed Today</p>
-          <p className="stat-card-value text-emerald-600">$380.20</p>
-          <p className="stat-card-sub">24 Completed payouts</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-lavender">
-          <p className="stat-card-label">Gateway Status</p>
-          <p className="stat-card-value text-[var(--primary)]">100% Online</p>
-          <p className="stat-card-sub">FaucetPay & RPC Nodes</p>
-        </div>
+        <AdminStatCard
+          label="Pending Queue"
+          value={`${pendingCount} Requests`}
+          sub="≈ $80.00 USD value"
+          icon={Clock}
+          accentIndex={3}
+        />
+        <AdminStatCard
+          label="Paid Today"
+          value="$380.20"
+          trend="up"
+          trendValue="24 Completed Payouts"
+          icon={DollarSign}
+          accentIndex={1}
+        />
+        <AdminStatCard
+          label="Gateway Node Status"
+          value="100% Online"
+          sub="FaucetPay & RPC Nodes active"
+          icon={ShieldCheck}
+          accentIndex={0}
+        />
       </div>
 
       {/* Filter Bar */}
-      <div className="card p-4">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by Request ID, user, or address..."
+              placeholder="Search by Request ID, username, or destination address..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-9 text-xs"
+              className="input-field pl-10 text-xs"
             />
           </div>
 
@@ -129,39 +146,41 @@ const AdminWithdrawalsPage = () => {
       </div>
 
       {/* Queue Table */}
-      <Card title="Withdrawal Records" subtitle={`Showing ${filtered.length} requests`}>
-        <div className="overflow-x-auto">
+      <Card title="Withdrawal Master Queue" subtitle={`Displaying ${filtered.length} requests`}>
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
                 <th>Request ID</th>
-                <th>User</th>
-                <th>Gateway & Currency</th>
-                <th>Coins</th>
+                <th>User Account</th>
+                <th>Method & Asset</th>
+                <th>Coins Debited</th>
                 <th>Crypto Amount</th>
                 <th>Destination Address</th>
-                <th>Date & Time</th>
+                <th>Submitted</th>
                 <th>Status</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((w) => (
-                <tr key={w.id}>
-                  <td className="font-mono text-xs font-semibold">{w.id}</td>
-                  <td className="font-bold text-sm text-[var(--text-primary)]">@{w.user}</td>
+                <tr key={w.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="font-mono text-xs font-bold text-slate-700">{w.id}</td>
+                  <td>
+                    <span className="font-bold text-xs text-slate-900 block">@{w.user}</span>
+                  </td>
                   <td>
                     <div>
-                      <span className="badge badge-primary font-bold text-xs">{w.currency}</span>
-                      <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">{w.method}</span>
+                      <span className="badge badge-primary font-extrabold text-[11px]">{w.currency}</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">{w.method}</span>
                     </div>
                   </td>
-                  <td className="font-mono text-xs font-semibold">{formatNumber(w.coins)}</td>
-                  <td className="font-bold font-mono text-sm text-[var(--text-primary)]">{w.amount}</td>
-                  <td className="font-mono text-xs max-w-[140px] truncate text-[var(--text-secondary)]" title={w.address}>
+                  <td className="font-mono text-xs font-bold text-slate-700">{formatNumber(w.coins)}</td>
+                  <td className="font-extrabold font-mono text-xs text-slate-900">{w.amount}</td>
+                  <td className="font-mono text-xs max-w-[150px] truncate text-slate-600 font-medium" title={w.address}>
                     {w.address}
                   </td>
-                  <td className="text-xs text-[var(--text-secondary)]">{formatDateTime(w.time)}</td>
+                  <td className="text-xs text-slate-500">{formatDateTime(w.time)}</td>
                   <td>
                     <StatusBadge status={w.status} />
                   </td>
@@ -170,24 +189,24 @@ const AdminWithdrawalsPage = () => {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => handleApprove(w.id)}
-                          className="p-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 font-semibold text-xs flex items-center gap-1 transition-colors"
+                          className="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center gap-1 transition-all border border-emerald-200"
                           title="Approve & Send"
                         >
-                          <Check size={14} /> Approve
+                          <Check size={13} strokeWidth={2.5} /> Approve
                         </button>
                         <button
                           onClick={() => {
                             setSelectedWd(w);
                             setRejectModal(true);
                           }}
-                          className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs flex items-center gap-1 transition-colors"
+                          className="px-2.5 py-1 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs flex items-center gap-1 transition-all border border-red-200"
                           title="Reject"
                         >
-                          <X size={14} /> Reject
+                          <X size={13} strokeWidth={2.5} /> Reject
                         </button>
                       </div>
                     ) : (
-                      <span className="text-xs text-[var(--text-muted)] font-medium">Processed</span>
+                      <span className="text-xs text-slate-400 font-semibold">Processed</span>
                     )}
                   </td>
                 </tr>
@@ -205,15 +224,15 @@ const AdminWithdrawalsPage = () => {
         maxWidth="max-w-md"
       >
         <form onSubmit={handleRejectSubmit} className="space-y-4">
-          <p className="text-xs text-[var(--text-secondary)]">
-            Rejecting this request will refund {selectedWd?.coins} Coins back to @{selectedWd?.user}'s account balance.
-          </p>
+          <div className="p-3.5 bg-red-50 rounded-2xl border border-red-200 text-xs text-red-900 leading-relaxed font-medium">
+            Rejecting this request will immediately cancel the transaction and refund <strong>{selectedWd?.coins} Coins</strong> back to @{selectedWd?.user}'s account balance.
+          </div>
 
           <div>
             <label className="input-label">Reason for Rejection</label>
             <textarea
               rows={3}
-              placeholder="e.g. Invalid wallet address, duplicate account flagged, unverified email..."
+              placeholder="e.g. Invalid wallet address, multi-account abuse detected, unverified email..."
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               className="input-field text-xs resize-none"
@@ -221,7 +240,7 @@ const AdminWithdrawalsPage = () => {
             />
           </div>
 
-          <Button type="submit" variant="danger" className="w-full font-bold">
+          <Button type="submit" variant="danger" className="w-full font-bold shadow-md">
             Confirm Rejection & Refund Coins
           </Button>
         </form>

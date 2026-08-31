@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Users, Search, Filter, Ban, CheckCircle, ShieldAlert, 
-  Coins, Edit, Eye, MoreVertical, Plus, Minus, ArrowUpRight, DollarSign
+  Coins, Edit, Eye, MoreVertical, Plus, Minus, ArrowUpRight, 
+  DollarSign, Download, Sparkles, UserCheck, Shield
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { StatusBadge } from '@/components/common/Badge';
 import { Link } from 'react-router-dom';
 import { formatNumber, formatDateTime } from '@/utils/formatters';
@@ -24,6 +26,7 @@ const AdminUsersPage = () => {
   const [users, setUsers] = useState(initialUsersList);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [vipFilter, setVipFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
   const [adjustAmount, setAdjustAmount] = useState('');
@@ -35,7 +38,8 @@ const AdminUsersPage = () => {
       u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
       u.ip.includes(searchTerm);
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesVip = vipFilter === 'all' || u.vip.toLowerCase().includes(vipFilter.toLowerCase());
+    return matchesSearch && matchesStatus && matchesVip;
   });
 
   const handleToggleBan = (userId) => {
@@ -66,47 +70,78 @@ const AdminUsersPage = () => {
     alert(`Adjusted balance for @${selectedUser.username}: ${delta > 0 ? `+${delta}` : delta} Coins.`);
   };
 
+  const handleExportCSV = () => {
+    alert('Exporting full users dataset to CSV...');
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">User Management</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">User Directory</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+              {users.length} Listed
+            </span>
+          </div>
           <p className="page-subtitle">Search, inspect, moderate, ban, and adjust coin balances across all registered accounts</p>
         </div>
+        <Button 
+          variant="secondary" 
+          size="sm" 
+          leftIcon={<Download size={14} />}
+          onClick={handleExportCSV}
+        >
+          Export Users (CSV)
+        </Button>
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="card p-4 stat-card stat-card-accent-blue">
-          <p className="stat-card-label">Total Users</p>
-          <p className="stat-card-value">28,450</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-deep">
-          <p className="stat-card-label">Active Today</p>
-          <p className="stat-card-value text-emerald-600">4,120</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-lavender">
-          <p className="stat-card-label">VIP Tier Members</p>
-          <p className="stat-card-value text-[var(--primary)]">1,280</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-black">
-          <p className="stat-card-label">Banned / Flagged</p>
-          <p className="stat-card-value text-red-600">142</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AdminStatCard
+          label="Total Registered"
+          value="28,450"
+          trend="up"
+          trendValue="+14% this month"
+          icon={Users}
+          accentIndex={0}
+        />
+        <AdminStatCard
+          label="Active Today"
+          value="4,120"
+          trend="up"
+          trendValue="Online Now"
+          icon={UserCheck}
+          accentIndex={1}
+        />
+        <AdminStatCard
+          label="VIP Club Members"
+          value="1,280"
+          sub="Tier 1 - 5 Active"
+          icon={Sparkles}
+          accentIndex={2}
+        />
+        <AdminStatCard
+          label="Flagged / Suspended"
+          value="142"
+          sub="Multi-IP & VPN violations"
+          icon={ShieldAlert}
+          accentIndex={3}
+        />
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="card p-4">
+      {/* Filter Bar */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search by username, email, or IP..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-9 text-xs"
+              className="input-field pl-10 text-xs"
             />
           </div>
 
@@ -121,53 +156,71 @@ const AdminUsersPage = () => {
               <option value="rejected">Banned / Suspended</option>
             </select>
           </div>
+
+          <div>
+            <select
+              value={vipFilter}
+              onChange={(e) => setVipFilter(e.target.value)}
+              className="input-field text-xs py-2"
+            >
+              <option value="all">All VIP Tiers</option>
+              <option value="Standard">Standard Tier</option>
+              <option value="Bronze">Bronze VIP</option>
+              <option value="Silver">Silver VIP</option>
+              <option value="Gold">Gold VIP</option>
+              <option value="Platinum">Platinum VIP</option>
+              <option value="Diamond">Diamond VIP</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Users Table */}
-      <Card title="Registered Accounts" subtitle={`Showing ${filteredUsers.length} users`}>
-        <div className="overflow-x-auto">
+      <Card title="Registered Accounts Master Table" subtitle={`Displaying ${filteredUsers.length} accounts`}>
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Email</th>
+                <th>User Account</th>
+                <th>Email Address</th>
                 <th>VIP Rank</th>
-                <th>Balance (Coins)</th>
+                <th>Coin Balance</th>
                 <th>IP & Country</th>
-                <th>Registered</th>
+                <th>Joined</th>
                 <th>Status</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((u) => (
-                <tr key={u.id}>
+                <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
                   <td>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[var(--deep)] text-white flex items-center justify-center font-bold text-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-xs shadow-xs flex-shrink-0">
                         {u.username[0].toUpperCase()}
                       </div>
                       <div>
-                        <span className="font-bold text-sm text-[var(--text-primary)] block">@{u.username}</span>
-                        <span className="text-[10px] font-mono text-[var(--text-muted)]">{u.id}</span>
+                        <span className="font-bold text-xs text-slate-900 block leading-tight">@{u.username}</span>
+                        <span className="text-[10px] font-mono text-slate-400 font-semibold">{u.id}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="text-xs text-[var(--text-secondary)]">{u.email}</td>
+                  <td className="text-xs text-slate-600 font-medium">{u.email}</td>
                   <td>
-                    <span className="badge badge-primary text-xs font-semibold">{u.vip}</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      {u.vip}
+                    </span>
                   </td>
                   <td>
-                    <span className="font-bold font-mono text-sm text-[var(--text-primary)]">
-                      {formatNumber(u.balance)}
+                    <span className="font-extrabold font-mono text-xs text-slate-900 bg-slate-100 px-2 py-1 rounded-lg">
+                      {formatNumber(u.balance)} Coins
                     </span>
                   </td>
                   <td className="text-xs">
-                    <span className="font-mono block text-[11px]">{u.ip}</span>
-                    <span className="text-[var(--text-muted)] text-[10px]">{u.country}</span>
+                    <span className="font-mono block text-[11px] text-slate-700 font-semibold">{u.ip}</span>
+                    <span className="text-slate-400 text-[10px]">{u.country}</span>
                   </td>
-                  <td className="text-xs text-[var(--text-secondary)]">{formatDateTime(u.joined)}</td>
+                  <td className="text-xs text-slate-500">{formatDateTime(u.joined)}</td>
                   <td>
                     <StatusBadge status={u.status === 'rejected' ? 'rejected' : 'active'} />
                   </td>
@@ -175,7 +228,7 @@ const AdminUsersPage = () => {
                     <div className="flex items-center justify-end gap-1.5">
                       <Link to={`/admin/users/${u.id}`}>
                         <button 
-                          className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
                           title="View In-Depth Profile"
                         >
                           <Eye size={14} />
@@ -186,16 +239,16 @@ const AdminUsersPage = () => {
                           setSelectedUser(u);
                           setAdjustModalOpen(true);
                         }}
-                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors"
+                        className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all font-semibold"
                         title="Adjust Coins"
                       >
                         <Coins size={14} />
                       </button>
                       <button 
                         onClick={() => handleToggleBan(u.id)}
-                        className={`p-1.5 rounded-lg transition-colors ${
+                        className={`p-2 rounded-xl transition-all ${
                           u.status === 'rejected' 
-                            ? 'bg-green-50 hover:bg-green-100 text-green-700' 
+                            ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' 
                             : 'bg-red-50 hover:bg-red-100 text-red-700'
                         }`}
                         title={u.status === 'rejected' ? 'Unban Account' : 'Ban Account'}
@@ -219,21 +272,21 @@ const AdminUsersPage = () => {
         maxWidth="max-w-md"
       >
         <form onSubmit={handleAdjustBalance} className="space-y-4">
-          <div className="p-3 bg-[var(--background)] rounded-xl flex justify-between text-xs">
-            <span>Current Balance:</span>
-            <strong className="font-mono text-sm">{formatNumber(selectedUser?.balance || 0)} Coins</strong>
+          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-semibold">Current Balance:</span>
+            <strong className="font-mono text-sm font-black text-slate-900">{formatNumber(selectedUser?.balance || 0)} Coins</strong>
           </div>
 
           <div>
-            <label className="input-label">Adjustment Type</label>
+            <label className="input-label">Adjustment Operation</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setAdjustType('credit')}
-                className={`p-2.5 rounded-xl font-bold text-xs border flex items-center justify-center gap-1.5 ${
+                className={`p-2.5 rounded-xl font-bold text-xs border flex items-center justify-center gap-1.5 transition-all ${
                   adjustType === 'credit' 
-                    ? 'bg-emerald-600 text-white border-emerald-600' 
-                    : 'bg-white text-gray-700 border-gray-200'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs' 
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <Plus size={14} /> Credit (Add Coins)
@@ -241,10 +294,10 @@ const AdminUsersPage = () => {
               <button
                 type="button"
                 onClick={() => setAdjustType('debit')}
-                className={`p-2.5 rounded-xl font-bold text-xs border flex items-center justify-center gap-1.5 ${
+                className={`p-2.5 rounded-xl font-bold text-xs border flex items-center justify-center gap-1.5 transition-all ${
                   adjustType === 'debit' 
-                    ? 'bg-red-600 text-white border-red-600' 
-                    : 'bg-white text-gray-700 border-gray-200'
+                    ? 'bg-red-600 text-white border-red-600 shadow-xs' 
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <Minus size={14} /> Debit (Deduct Coins)
@@ -274,7 +327,7 @@ const AdminUsersPage = () => {
             />
           </div>
 
-          <Button type="submit" variant="primary" className="w-full font-bold">
+          <Button type="submit" variant="primary" className="w-full font-bold shadow-md">
             Confirm Adjustment
           </Button>
         </form>

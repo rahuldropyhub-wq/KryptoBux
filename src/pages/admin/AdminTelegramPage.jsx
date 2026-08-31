@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
   Send, Save, CheckCircle, Bell, Users, 
-  ExternalLink, Key, Sparkles, Check
+  ExternalLink, Key, Sparkles, Check, Bot
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { formatNumber } from '@/utils/formatters';
 
 const AdminTelegramPage = () => {
@@ -40,38 +41,50 @@ const AdminTelegramPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Telegram Bot & Broadcast Center</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Telegram Bot & Broadcast Center</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+              Bot Integration
+            </span>
+          </div>
           <p className="page-subtitle">Manage Telegram API tokens, webhook connections, and push instant global announcements</p>
         </div>
       </div>
 
       {savedSuccess && (
-        <div className="p-4 bg-green-50 text-green-800 rounded-2xl border border-green-200 flex items-center gap-2 font-bold text-xs">
-          <CheckCircle size={16} className="text-green-600" />
-          <span>Telegram configuration saved!</span>
+        <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 flex items-center gap-2 font-bold text-xs">
+          <CheckCircle size={16} className="text-emerald-600" />
+          <span>Telegram bot configuration saved successfully!</span>
         </div>
       )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card p-4 stat-card stat-card-accent-blue">
-          <p className="stat-card-label">Linked Telegram Users</p>
-          <p className="stat-card-value">{formatNumber(14250)}</p>
-          <p className="stat-card-sub">Active bot connections</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-deep">
-          <p className="stat-card-label">Channel Members</p>
-          <p className="stat-card-value text-blue-600">24,500+</p>
-          <p className="stat-card-sub">@KryptoBuxOfficial</p>
-        </div>
-        <div className="card p-4 stat-card stat-card-accent-lavender">
-          <p className="stat-card-label">Webhook Status</p>
-          <p className="stat-card-value text-emerald-600">Active (200 OK)</p>
-          <p className="stat-card-sub">Real-time alerts syncing</p>
-        </div>
+        <AdminStatCard
+          label="Linked Telegram Users"
+          value={formatNumber(14250)}
+          sub="Active bot connections"
+          icon={Users}
+          accentIndex={0}
+        />
+        <AdminStatCard
+          label="Channel Members"
+          value="24,500+"
+          trend="up"
+          trendValue="@KryptoBuxOfficial"
+          icon={Send}
+          accentIndex={1}
+        />
+        <AdminStatCard
+          label="Webhook Status"
+          value="Active (200 OK)"
+          sub="Real-time alerts syncing"
+          icon={Bot}
+          accentIndex={2}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -110,7 +123,7 @@ const AdminTelegramPage = () => {
                 />
               </div>
 
-              <Button type="submit" variant="primary" className="w-full font-bold">
+              <Button type="submit" variant="primary" className="w-full font-bold shadow-md">
                 Save Bot Settings
               </Button>
             </form>
@@ -146,7 +159,7 @@ const AdminTelegramPage = () => {
               <Button 
                 type="submit" 
                 variant="primary" 
-                className="w-full font-bold bg-sky-600 hover:bg-sky-700 border-0"
+                className="w-full font-bold bg-sky-600 hover:bg-sky-700 border-0 shadow-md"
                 leftIcon={<Send size={15} />}
                 loading={broadcastSending}
               >

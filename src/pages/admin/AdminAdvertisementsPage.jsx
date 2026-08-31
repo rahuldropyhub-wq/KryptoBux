@@ -1,120 +1,134 @@
 import React, { useState } from 'react';
 import { 
-  Megaphone, PlusCircle, Code, Eye, DollarSign, 
-  CheckCircle, Power, Edit, Trash2, Globe
+  Megaphone, PlusCircle, Trash2, Edit, Code, 
+  Power, CheckCircle, Eye, DollarSign, Layers, Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import AdminStatCard from '@/components/admin/AdminStatCard';
 import { StatusBadge } from '@/components/common/Badge';
-import { formatNumber } from '@/utils/formatters';
 
-const initialAdSlots = [
-  { id: 'AD-1', name: 'Header Top Leaderboard (728x90)', placement: 'Header Banner', network: 'Adsterra', eCpm: '$2.80', impressions: 42500, revenue: '$119.00', status: 'active' },
-  { id: 'AD-2', name: 'Dashboard Sidebar Box (300x250)', placement: 'Sidebar Bottom', network: 'PropellerAds', eCpm: '$3.40', impressions: 28400, revenue: '$96.56', status: 'active' },
-  { id: 'AD-3', name: 'PTC Ad Wall Native In-Feed', placement: 'Between Ad Cards', network: 'CoinTraffic', eCpm: '$4.10', impressions: 18200, revenue: '$74.62', status: 'active' },
-  { id: 'AD-4', name: 'Hourly Faucet Popunder Unit', placement: 'On Faucet Roll Click', network: 'PopCash', eCpm: '$5.50', impressions: 8400, revenue: '$46.20', status: 'active' },
+const initialAdUnits = [
+  { id: 'AD-1', name: 'Header Leaderboard 728x90', network: 'Adsterra', placement: 'Global Topbar / Header', eCpm: '$2.80', impressions: 45200, status: 'active', code: '<script src="//pl1982.adsterra.com/banner.js"></script>' },
+  { id: 'AD-2', name: 'Sidebar Rectangle 300x250', network: 'PropellerAds', placement: 'Sidebar Bottom', eCpm: '$3.40', impressions: 32400, status: 'active', code: '<script data-cfasync="false" src="//propeller.js"></script>' },
+  { id: 'AD-3', name: 'Faucet Page Native Banner', network: 'CoinTraffic', placement: 'Above Dice Roll', eCpm: '$4.20', impressions: 18900, status: 'active', code: '<ins class="ct-banner" data-id="99182"></ins>' },
+  { id: 'AD-4', name: 'Popunder Trigger On-Click', network: 'PopCash', placement: 'Global Background', eCpm: '$1.90', impressions: 12000, status: 'paused', code: '<script type="text/javascript" src="//popcash.net/pop.js"></script>' },
 ];
 
 const AdminAdvertisementsPage = () => {
-  const [adSlots, setAdSlots] = useState(initialAdSlots);
-  const [createModal, setCreateModal] = useState(false);
-
-  const [name, setName] = useState('');
-  const [placement, setPlacement] = useState('Header Banner');
-  const [network, setNetwork] = useState('Adsterra');
-  const [code, setCode] = useState('');
-
-  const handleCreate = (e) => {
-    e.preventDefault();
-    if (!name || !code) return;
-
-    const newSlot = {
-      id: `AD-${Date.now()}`,
-      name,
-      placement,
-      network,
-      eCpm: '$3.00',
-      impressions: 0,
-      revenue: '$0.00',
-      status: 'active'
-    };
-
-    setAdSlots(prev => [...prev, newSlot]);
-    setCreateModal(false);
-    setName('');
-    setCode('');
-    alert('New ad slot configured and live across the platform!');
-  };
+  const [adUnits, setAdUnits] = useState(initialAdUnits);
+  const [codeModal, setCodeModal] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState(null);
 
   const handleToggle = (id) => {
-    setAdSlots(prev => prev.map(s => s.id === id ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' } : s));
+    setAdUnits(prev => prev.map(u => {
+      if (u.id === id) {
+        return { ...u, status: u.status === 'active' ? 'paused' : 'active' };
+      }
+      return u;
+    }));
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="page-title">Advertisement & Monetization</h1>
-          <p className="page-subtitle">Manage banner placements, native ad networks, CPM tracking, and third-party script tags</p>
+          <div className="flex items-center gap-2">
+            <h1 className="page-title">Ad Network Placements</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-50 text-purple-700 border border-purple-200">
+              {adUnits.length} Placements
+            </span>
+          </div>
+          <p className="page-subtitle">Manage 3rd-party banner networks (Adsterra, PropellerAds, CoinTraffic, PopCash) and HTML snippet codes</p>
         </div>
-        <Button 
-          variant="primary" 
-          size="sm" 
-          leftIcon={<PlusCircle size={15} />}
-          onClick={() => setCreateModal(true)}
-        >
-          Add Ad Placement
-        </Button>
       </div>
 
-      {/* Ad Slots Table */}
-      <Card title="Active Ad Network Placements" subtitle="Live banner widgets embedded in user panel">
-        <div className="overflow-x-auto">
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <AdminStatCard
+          label="Active Ad Units"
+          value={adUnits.filter(u => u.status === 'active').length}
+          sub="Displaying across 4 pages"
+          icon={Layers}
+          accentIndex={0}
+        />
+        <AdminStatCard
+          label="Estimated Monthly Ad Revenue"
+          value="$4,446.00"
+          trend="up"
+          trendValue="+18% vs last month"
+          icon={DollarSign}
+          accentIndex={1}
+        />
+        <AdminStatCard
+          label="Average eCPM Rate"
+          value="$3.10 eCPM"
+          sub="Crypto & High Tier Traffic"
+          icon={Sparkles}
+          accentIndex={2}
+        />
+      </div>
+
+      {/* Ad Units Table */}
+      <Card title="Configured Banner Units" subtitle="Live embedded advertising widgets">
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Ad Slot Name</th>
-                <th>Placement Location</th>
+                <th>Unit Identifier</th>
                 <th>Ad Network</th>
+                <th>Site Placement</th>
                 <th>eCPM Rate</th>
-                <th>24h Impressions</th>
-                <th>Estimated Revenue</th>
+                <th>Total Views</th>
                 <th>Status</th>
-                <th className="text-right">Action</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {adSlots.map((s) => (
-                <tr key={s.id}>
+              {adUnits.map((unit) => (
+                <tr key={unit.id} className="hover:bg-slate-50/80 transition-colors">
                   <td>
-                    <span className="font-bold text-sm text-[var(--text-primary)] block">{s.name}</span>
-                    <span className="text-[10px] font-mono text-[var(--text-muted)]">{s.id}</span>
+                    <span className="font-extrabold text-xs text-slate-900 block">{unit.name}</span>
+                    <span className="text-[10px] font-mono text-slate-400 font-semibold">{unit.id}</span>
                   </td>
-                  <td className="text-xs text-[var(--text-secondary)]">{s.placement}</td>
                   <td>
-                    <span className="badge badge-primary text-xs font-semibold">{s.network}</span>
+                    <span className="badge badge-primary text-[11px] font-bold">{unit.network}</span>
                   </td>
-                  <td className="font-mono text-xs font-bold text-emerald-600">{s.eCpm}</td>
-                  <td className="font-mono text-xs">{formatNumber(s.impressions)}</td>
-                  <td className="font-mono text-sm font-bold text-[var(--text-primary)]">{s.revenue}</td>
+                  <td className="text-xs text-slate-600 font-medium">{unit.placement}</td>
+                  <td className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-2 border border-emerald-200">
+                    {unit.eCpm}
+                  </td>
+                  <td className="font-mono text-xs text-slate-700 font-semibold">{unit.impressions.toLocaleString()} views</td>
                   <td>
-                    <StatusBadge status={s.status} />
+                    <StatusBadge status={unit.status} />
                   </td>
                   <td className="text-right">
-                    <button
-                      onClick={() => handleToggle(s.id)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        s.status === 'active' 
-                          ? 'bg-red-50 hover:bg-red-100 text-red-700' 
-                          : 'bg-green-50 hover:bg-green-100 text-green-700'
-                      }`}
-                      title={s.status === 'active' ? 'Disable Ad Slot' : 'Enable Ad Slot'}
-                    >
-                      <Power size={14} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => {
+                          setSelectedUnit(unit);
+                          setCodeModal(true);
+                        }}
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-semibold"
+                        title="Edit HTML/JS Snippet"
+                      >
+                        <Code size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleToggle(unit.id)}
+                        className={`p-2 rounded-xl transition-all ${
+                          unit.status === 'active' 
+                            ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' 
+                            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'
+                        }`}
+                        title={unit.status === 'active' ? 'Pause Unit' : 'Activate Unit'}
+                      >
+                        <Power size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -123,70 +137,34 @@ const AdminAdvertisementsPage = () => {
         </div>
       </Card>
 
-      {/* Add Modal */}
+      {/* Snippet Code Modal */}
       <Modal
-        isOpen={createModal}
-        onClose={() => setCreateModal(false)}
-        title="Configure New Ad Slot"
+        isOpen={codeModal}
+        onClose={() => setCodeModal(false)}
+        title={`Edit Embed Snippet: ${selectedUnit?.name || ''}`}
         maxWidth="max-w-md"
       >
-        <form onSubmit={handleCreate} className="space-y-4">
+        <div className="space-y-4">
           <div>
-            <label className="input-label">Ad Slot Title</label>
-            <Input 
-              placeholder="e.g. Footer 728x90 Banner"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="input-label">Placement</label>
-              <select
-                value={placement}
-                onChange={(e) => setPlacement(e.target.value)}
-                className="input-field text-xs py-2"
-              >
-                <option value="Header Banner">Header Banner</option>
-                <option value="Sidebar Bottom">Sidebar Bottom</option>
-                <option value="In-Content">In-Content</option>
-                <option value="Popunder">Popunder</option>
-              </select>
-            </div>
-            <div>
-              <label className="input-label">Ad Network</label>
-              <select
-                value={network}
-                onChange={(e) => setNetwork(e.target.value)}
-                className="input-field text-xs py-2"
-              >
-                <option value="Adsterra">Adsterra</option>
-                <option value="PropellerAds">PropellerAds</option>
-                <option value="CoinTraffic">CoinTraffic</option>
-                <option value="PopCash">PopCash</option>
-                <option value="Google AdSense">Google AdSense</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="input-label">HTML / Javascript Code Snippet</label>
+            <label className="input-label">Ad Network HTML/JS Embed Script</label>
             <textarea
               rows={4}
-              placeholder="<script async src='https://...'></script>"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              defaultValue={selectedUnit?.code || ''}
               className="input-field font-mono text-xs resize-none"
-              required
             />
           </div>
 
-          <Button type="submit" variant="primary" className="w-full font-bold">
-            Embed Ad Slot
+          <Button 
+            variant="primary" 
+            className="w-full font-bold shadow-md"
+            onClick={() => {
+              setCodeModal(false);
+              alert('Ad code updated and deployed live!');
+            }}
+          >
+            Save Ad Snippet Code
           </Button>
-        </form>
+        </div>
       </Modal>
     </div>
   );
