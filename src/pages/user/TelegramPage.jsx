@@ -53,7 +53,7 @@ const TelegramPage = () => {
       </div>
 
       {/* Hero Connect Banner */}
-      <div className="card p-6 lg:p-8 bg-gradient-to-br from-sky-600 to-blue-800 text-white rounded-3xl relative overflow-hidden">
+      <div className="p-6 lg:p-8 bg-gradient-to-br from-[#234398] to-blue-800 text-white rounded-3xl shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shadow-xl flex-shrink-0">
