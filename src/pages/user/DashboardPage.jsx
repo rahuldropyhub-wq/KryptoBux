@@ -1,89 +1,131 @@
-import { Monitor, Link2, Droplets, Star, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import StatCard from '@/components/user/StatCard';
-import ActivityFeed from '@/components/user/ActivityFeed';
-import TransactionTable from '@/components/user/TransactionTable';
-import Card from '@/components/common/Card';
-import ChartCard from '@/components/admin/ChartCard';
-import { ROUTES } from '@/utils/constants';
-
-const quickActions = [
-  { label: 'PTC Ads', icon: Monitor, href: ROUTES.PTC, color: 'text-blue-600 bg-blue-50' },
-  { label: 'Shortlinks', icon: Link2, href: ROUTES.SHORTLINKS, color: 'text-purple-600 bg-purple-50' },
-  { label: 'Faucet', icon: Droplets, href: ROUTES.FAUCET, color: 'text-cyan-600 bg-cyan-50' },
-  { label: 'Daily Bonus', icon: Star, href: ROUTES.DAILY_BONUS, color: 'text-yellow-600 bg-yellow-50' },
-  { label: 'Withdraw', icon: Download, href: ROUTES.WITHDRAW, color: 'text-green-600 bg-green-50' },
-];
-
-const chartData = [
-  { label: 'Mon', value: 120 },
-  { label: 'Tue', value: 280 },
-  { label: 'Wed', value: 200 },
-  { label: 'Thu', value: 380 },
-  { label: 'Fri', value: 310 },
-  { label: 'Sat', value: 490 },
-  { label: 'Sun', value: 420 },
-];
+import React from 'react';
+import { useDashboard } from '../../hooks/useDashboard';
+import BalanceCard from '../../components/dashboard/BalanceCard';
+import LevelCard from '../../components/dashboard/LevelCard';
+import DailyBonusCard from '../../components/dashboard/DailyBonusCard';
+import AvailableOffersCarousel from '../../components/dashboard/AvailableOffersCarousel';
+import EarningsSummary from '../../components/dashboard/EarningsSummary';
+import WeeklyEarningsChart from '../../components/dashboard/WeeklyEarningsChart';
+import ActivityOverview from '../../components/dashboard/ActivityOverview';
+import QuickEarningActions from '../../components/dashboard/QuickEarningActions';
+import FaucetStatusCard from '../../components/dashboard/FaucetStatusCard';
+import ReferralSummary from '../../components/dashboard/ReferralSummary';
+import RecentTransactions from '../../components/dashboard/RecentTransactions';
+import ActivityTimeline from '../../components/dashboard/ActivityTimeline';
+import ChallengeProgress from '../../components/dashboard/ChallengeProgress';
+import LeaderboardPreview from '../../components/dashboard/LeaderboardPreview';
 
 const DashboardPage = () => {
+  const { data, loading } = useDashboard();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <div className="w-10 h-10 border-4 border-vie-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="section-header">
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">Krypto Bux • User Panel</p>
+    <div className="animate-in fade-in duration-500">
+      {/* 1. BALANCE + LEVEL + DAILY BONUS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <BalanceCard balance={data.user.balance} usdBalance={data.user.usdBalance} />
+        <LevelCard level={data.user.level} xp={data.user.xp} nextLevelXp={data.user.nextLevelXp} />
+        <DailyBonusCard day={data.user.dailyBonusDay} reward={data.user.dailyBonusReward} />
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard label="Total Balance" value={2450} sub="Coins" accentIndex={0} />
-        <StatCard label="Earning Bonus" value="+15%" sub="Active" accentIndex={1} />
-        <StatCard label="Total Earned" value={12750} sub="Coins" accentIndex={2} />
-        <StatCard label="Total Referrals" value={125} sub="Users" accentIndex={3} />
+      {/* 2. ADVERTISEMENT BANNER (Mock) */}
+      <div className="w-full bg-gray-100 rounded-xl flex items-center justify-center h-24 mb-6 border border-gray-200 border-dashed text-gray-400 text-sm font-medium">
+        Advertisement Banner
       </div>
 
-      {/* Quick Actions */}
-      <Card title="Quick Actions">
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {quickActions.map((action) => (
-            <Link
-              key={action.label}
-              to={action.href}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-[var(--background)] transition-all group"
-            >
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${action.color} group-hover:scale-110 transition-transform`}>
-                <action.icon size={18} />
-              </div>
-              <span className="text-xs font-medium text-[var(--text-secondary)] text-center leading-tight">{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      </Card>
+      {/* 3. OFFERWALL CAROUSEL */}
+      <AvailableOffersCarousel />
 
-      {/* Charts + Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <div className="lg:col-span-3">
-          <ChartCard
-            title="Earnings Overview"
-            subtitle="Last 7 days"
-            data={chartData}
-            height={220}
-            labels={[
-              { label: 'Faucet', color: '#234398' },
-              { label: 'PTC', color: '#25275E' },
-              { label: 'Daily Bonus', color: '#E2DCED' },
-            ]}
-          />
+      {/* 4. EARNINGS SUMMARY */}
+      <div className="mb-6">
+        <EarningsSummary earnings={data.earnings} />
+      </div>
+
+      {/* 3. WEEKLY EARNINGS CHART */}
+      <div className="mb-6">
+        <WeeklyEarningsChart data={data.chartData} />
+      </div>
+
+      {/* 4. ACTIVITY OVERVIEW */}
+      <div className="mb-6">
+        <ActivityOverview activity={data.activity} />
+      </div>
+
+      {/* 5. START EARNING / QUICK ACTIONS */}
+      <div className="mb-6">
+        <QuickEarningActions />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* 6. FAUCET STATUS */}
+        <div className="lg:col-span-1">
+          <FaucetStatusCard />
         </div>
+        
+        {/* LEVEL PROGRESS (Detailed) */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-vie-text mb-4">Level Progress</h2>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="font-bold">Level {data.user.level}</span>
+            <span className="font-bold text-gray-400">Level {data.user.level + 1}</span>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-3 mb-2">
+            <div className="bg-vie-primary h-3 rounded-full" style={{ width: '84.5%' }}></div>
+          </div>
+          <div className="text-xs text-center text-gray-500 mb-5">
+            {data.user.xp.toLocaleString()} / {data.user.nextLevelXp.toLocaleString()} XP
+          </div>
+
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Recent XP</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-gray-50 rounded p-2 text-center border border-gray-100">
+              <div className="text-xs text-gray-500 mb-1">Faucet</div>
+              <div className="text-sm font-bold text-vie-success">+5 XP</div>
+            </div>
+            <div className="bg-gray-50 rounded p-2 text-center border border-gray-100">
+              <div className="text-xs text-gray-500 mb-1">PTC</div>
+              <div className="text-sm font-bold text-vie-success">+2 XP</div>
+            </div>
+            <div className="bg-gray-50 rounded p-2 text-center border border-gray-100">
+              <div className="text-xs text-gray-500 mb-1">Challenge</div>
+              <div className="text-sm font-bold text-vie-success">+20 XP</div>
+            </div>
+            <div className="bg-gray-50 rounded p-2 text-center border border-gray-100">
+              <div className="text-xs text-gray-500 mb-1">Offerwall</div>
+              <div className="text-sm font-bold text-vie-success">+50 XP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 7. REFERRAL SUMMARY + CHALLENGE PROGRESS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">
-          <ActivityFeed />
+          <ReferralSummary data={data.user} />
+        </div>
+        <div className="lg:col-span-1">
+          <ChallengeProgress />
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <Card title="Recent Transactions" subtitle="Your latest activity">
-        <TransactionTable />
-      </Card>
+      {/* 8. RECENT TRANSACTIONS + RECENT ACTIVITY + LEADERBOARD PREVIEW */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <RecentTransactions transactions={data.transactions} />
+        </div>
+        <div className="lg:col-span-1 grid grid-cols-1 gap-6">
+          <ActivityTimeline timeline={data.timeline} />
+          <LeaderboardPreview leaderboard={data.leaderboard} />
+        </div>
+      </div>
+
     </div>
   );
 };

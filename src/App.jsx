@@ -26,7 +26,7 @@ import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 import AccountVerificationPage from '@/pages/auth/AccountVerificationPage';
 
-// User Pages
+// User Pages - Existing
 import DashboardPage from '@/pages/user/DashboardPage';
 import ProfilePage from '@/pages/user/ProfilePage';
 import WalletPage from '@/pages/user/WalletPage';
@@ -35,6 +35,7 @@ import ShortlinksPage from '@/pages/user/ShortlinksPage';
 import FaucetPage from '@/pages/user/FaucetPage';
 import DailyBonusPage from '@/pages/user/DailyBonusPage';
 import CouponsPage from '@/pages/user/CouponsPage';
+import LotteryPage from '@/pages/user/LotteryPage';
 import ReferralsPage from '@/pages/user/ReferralsPage';
 import VipPage from '@/pages/user/VipPage';
 import SpinWheelPage from '@/pages/user/SpinWheelPage';
@@ -47,6 +48,7 @@ import NotificationsPage from '@/pages/user/NotificationsPage';
 import SupportPage from '@/pages/user/SupportPage';
 import TelegramPage from '@/pages/user/TelegramPage';
 import SettingsPage from '@/pages/user/SettingsPage';
+import DonationCampaignPage from '@/pages/donations/DonationCampaignPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -111,6 +113,7 @@ function App() {
           <Route path="/faucet" element={<FaucetPage />} />
           <Route path="/daily-bonus" element={<DailyBonusPage />} />
           <Route path="/coupons" element={<CouponsPage />} />
+          <Route path="/lottery" element={<LotteryPage />} />
           <Route path="/referrals" element={<ReferralsPage />} />
           <Route path="/vip" element={<VipPage />} />
           <Route path="/spin-wheel" element={<SpinWheelPage />} />
@@ -123,6 +126,7 @@ function App() {
           <Route path="/support" element={<SupportPage />} />
           <Route path="/telegram" element={<TelegramPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/campaign/:id" element={<DonationCampaignPage />} />
         </Route>
 
         {/* Admin Routes */}

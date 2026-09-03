@@ -93,9 +93,9 @@ const ChallengesPage = () => {
       </div>
 
       {/* Overall Progress Banner */}
-      <div className="card p-6 bg-gradient-to-r from-[var(--deep)] to-blue-950 text-white rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="p-6 bg-gradient-to-r from-blue-900 to-blue-950 text-white rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
         <div>
-          <span className="badge bg-white/10 text-white text-xs font-bold mb-2">
+          <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold mb-2">
             {activeTab === 'daily' ? 'Daily Master Quest' : 'Weekly Season Challenge'}
           </span>
           <h2 className="text-xl lg:text-2xl font-black">

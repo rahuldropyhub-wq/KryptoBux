@@ -7,6 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
+        vie: {
+          sidebar: '#151C2C', // Deep Navy
+          'sidebar-active': '#202A3D', // Secondary Navy
+          background: '#F5F7FB',
+          primary: '#234398',
+          success: '#10B981',
+          warning: '#F59E0B',
+          danger: '#EF4444',
+          card: '#FFFFFF',
+          text: '#172033',
+          'text-muted': '#6B7280',
+          border: '#E3E7EF'
+        },
+        pepe: {
+          primary: '#58B947',
+          light: '#EAF7E6',
+          dark: '#2F7D32',
+        },
         primary: {
           DEFAULT: '#234398',
           50: '#eef1fb',
@@ -21,14 +39,14 @@ export default {
           900: '#111f50',
         },
         deep: {
-          DEFAULT: '#25275E',
+          DEFAULT: '#151C2C',
           50: '#eeeef8',
           100: '#d5d5ef',
           200: '#ababdf',
           300: '#8181cf',
           400: '#5757bf',
-          500: '#25275E',
-          600: '#202254',
+          500: '#202A3D', // Secondary
+          600: '#151C2C', // Primary Deep
           700: '#1b1d4a',
           800: '#161840',
           900: '#111336',
@@ -44,11 +62,11 @@ export default {
         },
         brand: {
           blue: '#234398',
-          navy: '#25275E',
+          navy: '#151C2C',
           lavender: '#E2DCED',
-          bg: '#F7F8FC',
+          bg: '#F5F7FB',
         },
-        success: '#16A34A',
+        success: '#10B981',
         warning: '#F59E0B',
         error: '#DC2626',
       },

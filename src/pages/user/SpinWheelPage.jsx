@@ -1,263 +1,408 @@
-import React, { useState } from 'react';
-import { 
-  RefreshCw, Trophy, Sparkles, Coins, Zap, Gift, 
-  CheckCircle, Flame, Clock, Award, History
-} from 'lucide-react';
-import Card from '@/components/common/Card';
-import Button from '@/components/common/Button';
-import Modal from '@/components/common/Modal';
-import useWalletStore from '@/store/walletStore';
-import { formatNumber, formatDateTime } from '@/utils/formatters';
+import React, { useState, useEffect } from 'react';
+import { Target, Zap, Clock, Trophy, ChevronRight, CheckCircle2, Hexagon, Diamond, Coins } from 'lucide-react';
 
-const wheelSegments = [
-  { id: 0, label: '50 Coins', value: 50, type: 'coins', color: '#234398' },
-  { id: 1, label: '100 Coins', value: 100, type: 'coins', color: '#25275E' },
-  { id: 2, label: '250 Coins', value: 250, type: 'coins', color: '#f59e0b' },
-  { id: 3, label: '50 Energy', value: 50, type: 'energy', color: '#06b6d4' },
-  { id: 4, label: '500 Coins', value: 500, type: 'coins', color: '#16a34a' },
-  { id: 5, label: '+1 Free Spin', value: 1, type: 'spin', color: '#8b5cf6' },
-  { id: 6, label: '1,000 Coins', value: 1000, type: 'coins', color: '#dc2626' },
-  { id: 7, label: 'Mystery Box', value: 350, type: 'mystery', color: '#ec4899' },
-];
-
-const mockSpinHistory = [
-  { id: 'SP-1', prize: '100 Coins', time: new Date(Date.now() - 3600000 * 2).toISOString() },
-  { id: 'SP-2', prize: '50 Energy', time: new Date(Date.now() - 86400000).toISOString() },
-  { id: 'SP-3', prize: '250 Coins', time: new Date(Date.now() - 86400000 * 2).toISOString() },
-];
+// Custom CSS for the page animations
+const customStyles = `
+  .reward-engine-spin {
+    transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1);
+  }
+  .magnetic-pointer-active {
+    animation: pulse-glow 1s infinite alternate;
+  }
+  @keyframes pulse-glow {
+    0% { box-shadow: 0 0 10px rgba(110, 150, 255, 0.4); }
+    100% { box-shadow: 0 0 25px rgba(110, 150, 255, 0.8); }
+  }
+  .particle-float {
+    animation: float 10s infinite linear;
+  }
+  @keyframes float {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    20% { opacity: 0.5; }
+    80% { opacity: 0.5; }
+    100% { transform: translateY(-100px) rotate(180deg); opacity: 0; }
+  }
+  .edge-light {
+    animation: edge-pulse 2s infinite alternate;
+  }
+  @keyframes edge-pulse {
+    0% { box-shadow: 0 0 10px #234398, inset 0 0 10px #234398; }
+    100% { box-shadow: 0 0 30px #6e96ff, inset 0 0 30px #6e96ff; }
+  }
+  /* Confetti animations */
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 16px;
+    opacity: 0;
+    animation: confetti-fall 3s ease-in-out forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+`;
 
 const SpinWheelPage = () => {
-  const { addTransaction } = useWalletStore();
-  const [spinsLeft, setSpinsLeft] = useState(3);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [rotationDegree, setRotationDegree] = useState(0);
-  const [wonPrize, setWonPrize] = useState(null);
-  const [history, setHistory] = useState(mockSpinHistory);
-  const [winModalOpen, setWinModalOpen] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [wonReward, setWonReward] = useState(null);
+  const [spinsLeft, setSpinsLeft] = useState(1);
+  
+  const segments = [
+    { label: '+0.0001 BTC', color: 'bg-[#1e224f]', text: 'text-white' },
+    { label: '+5 USDT', color: 'bg-[#151736]', text: 'text-gray-300' },
+    { label: '+1 Free Spin', color: 'bg-[#234398]', text: 'text-white' },
+    { label: '+100 Points', color: 'bg-[#151736]', text: 'text-gray-300' },
+    { label: '+0.001 ETH', color: 'bg-[#1e224f]', text: 'text-white' },
+    { label: 'Try Again', color: 'bg-[#0f1123]', text: 'text-gray-500' },
+    { label: '+25 USDT', color: 'bg-[#1e224f]', text: 'text-white' },
+    { label: '+500 Points', color: 'bg-[#234398]', text: 'text-white' },
+    { label: '+10 USDT', color: 'bg-[#151736]', text: 'text-gray-300' },
+    { label: 'Try Again', color: 'bg-[#0f1123]', text: 'text-gray-500' },
+  ];
 
   const handleSpin = () => {
     if (spinsLeft <= 0 || isSpinning) return;
-
+    
     setIsSpinning(true);
     setSpinsLeft(prev => prev - 1);
-    setWonPrize(null);
-
-    // Pick random winning segment
-    const winningIndex = Math.floor(Math.random() * wheelSegments.length);
-    const prize = wheelSegments[winningIndex];
-
-    // Calculate rotation: 8 segments = 45 deg per segment
-    // Additional full spins (5 * 360 = 1800 deg)
-    const segmentAngle = 360 / wheelSegments.length;
-    const targetAngle = 360 - (winningIndex * segmentAngle) - (segmentAngle / 2);
-    const newTotalDegree = rotationDegree + 1800 + (targetAngle - (rotationDegree % 360));
-
-    setRotationDegree(newTotalDegree);
-
+    
+    // Calculate random rotation
+    const extraSpins = 5; // spins 5 times before landing
+    const randomSegment = Math.floor(Math.random() * segments.length);
+    // Determine angle to land exactly in the middle of a segment
+    const segmentAngle = 360 / segments.length;
+    // We subtract the random segment angle to point to it, pointer is at top (0 deg)
+    const targetAngle = (360 - (randomSegment * segmentAngle)) - (segmentAngle / 2);
+    const newRotation = rotation + (extraSpins * 360) + targetAngle;
+    
+    setRotation(newRotation);
+    
     setTimeout(() => {
       setIsSpinning(false);
-      setWonPrize(prize);
-      setWinModalOpen(true);
-
-      if (prize.type === 'coins' || prize.type === 'mystery') {
-        addTransaction({
-          id: `TX-${Math.floor(Math.random() * 90000 + 10000)}`,
-          type: 'bonus',
-          desc: `Lucky Spin Wheel Prize (${prize.label})`,
-          amount: prize.value,
-          currency: 'Coins',
-          time: new Date().toISOString(),
-          status: 'completed'
-        });
-      } else if (prize.type === 'spin') {
-        setSpinsLeft(prev => prev + 1);
+      setWonReward(segments[randomSegment].label);
+      if (segments[randomSegment].label !== 'Try Again') {
+        setShowModal(true);
+        triggerConfetti();
       }
-
-      setHistory(prev => [{
-        id: `SP-${Date.now()}`,
-        prize: prize.label,
-        time: new Date().toISOString()
-      }, ...prev]);
     }, 4000);
   };
 
+  const [confetti, setConfetti] = useState([]);
+  
+  const triggerConfetti = () => {
+    const pieces = Array.from({ length: 60 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100 + '%',
+      delay: Math.random() * 0.5 + 's',
+      color: ['#234398', '#6e96ff', '#e2dced', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)]
+    }));
+    setConfetti(pieces);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="page-title">Lucky Spin Wheel</h1>
-          <p className="page-subtitle">Spin the wheel daily to win mystery prizes, extra energy, and up to 1,000 Coins</p>
+    <div className="min-h-screen bg-[#25275E] text-white p-4 sm:p-8 rounded-xl font-sans relative overflow-hidden">
+      <style>{customStyles}</style>
+      
+      {/* Background Ambient Effects */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#234398] rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+      
+      <div className="max-w-6xl mx-auto relative z-10">
+        
+        {/* 2. HERO HEADER */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-[#151736]/80 border border-[#234398]/50 px-4 py-1.5 rounded-full text-sm font-medium text-[#E2DCED] mb-6 shadow-[0_0_15px_rgba(35,67,152,0.3)]">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Spin available
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 drop-shadow-lg">
+            SPIN & EARN
+          </h1>
+          <p className="text-lg md:text-xl text-[#E2DCED]/70 font-light max-w-2xl mx-auto">
+            Take your chance and unlock today’s crypto reward.
+          </p>
         </div>
-      </div>
 
-      {/* Main Wheel Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left: Interactive Wheel */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center p-6 lg:p-10 card bg-gradient-to-b from-white to-[var(--background)] border border-[var(--border)] relative">
-          
-          {/* Indicator Pointer Pin */}
-          <div className="z-30 -mb-5 flex flex-col items-center">
-            <div className="w-6 h-8 bg-red-600 rounded-b-full shadow-lg border-2 border-white flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full" />
-            </div>
-          </div>
-
-          {/* SVG Rotating Wheel */}
-          <div className="relative w-72 h-72 sm:w-88 sm:h-88 flex items-center justify-center">
-            <svg
-              viewBox="0 0 400 400"
-              className="w-full h-full drop-shadow-2xl rounded-full"
-              style={{
-                transform: `rotate(${rotationDegree}deg)`,
-                transition: isSpinning ? 'transform 4s cubic-bezier(0.15, 0.9, 0.2, 1)' : 'none',
-              }}
-            >
-              {wheelSegments.map((segment, index) => {
-                const angle = 360 / wheelSegments.length;
-                const startAngle = index * angle;
-                const endAngle = startAngle + angle;
-                const rad = (Math.PI / 180);
-                
-                // SVG sector arc math
-                const x1 = 200 + 190 * Math.cos(startAngle * rad);
-                const y1 = 200 + 190 * Math.sin(startAngle * rad);
-                const x2 = 200 + 190 * Math.cos(endAngle * rad);
-                const y2 = 200 + 190 * Math.sin(endAngle * rad);
-                
-                const textAngle = startAngle + angle / 2;
-                const tx = 200 + 120 * Math.cos(textAngle * rad);
-                const ty = 200 + 120 * Math.sin(textAngle * rad);
-
-                return (
-                  <g key={segment.id}>
-                    <path
-                      d={`M200,200 L${x1},${y1} A190,190 0 0,1 ${x2},${y2} Z`}
-                      fill={segment.color}
-                      stroke="#ffffff"
-                      strokeWidth="2.5"
-                    />
-                    <text
-                      x={tx}
-                      y={ty}
-                      fill="#ffffff"
-                      fontSize="14"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      transform={`rotate(${textAngle + 90}, ${tx}, ${ty})`}
-                    >
-                      {segment.label}
-                    </text>
-                  </g>
-                );
-              })}
-              {/* Outer Golden Ring */}
-              <circle cx="200" cy="200" r="192" fill="none" stroke="#f59e0b" strokeWidth="6" />
-            </svg>
-
-            {/* Center Spin Hub */}
-            <div className="absolute w-20 h-20 bg-white rounded-full shadow-2xl border-4 border-amber-400 flex items-center justify-center z-20">
-              <Trophy size={28} className="text-amber-500 animate-pulse" />
-            </div>
-          </div>
-
-          {/* Spin Trigger CTA */}
-          <div className="mt-8 flex flex-col items-center gap-3 w-full max-w-xs">
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full font-black tracking-wider text-base py-4 bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600 border-0 shadow-xl"
-              disabled={spinsLeft <= 0 || isSpinning}
-              loading={isSpinning}
-              onClick={handleSpin}
-            >
-              {isSpinning ? 'SPINNING...' : `SPIN NOW (${spinsLeft} LEFT)`}
-            </Button>
+        {spinsLeft > 0 || isSpinning ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
             
-            <p className="text-xs text-[var(--text-secondary)]">
-              Daily Free Spins: <strong className="text-[var(--text-primary)]">{spinsLeft} available</strong>
-            </p>
-          </div>
-        </div>
-
-        {/* Right: How to get more spins & History */}
-        <div className="lg:col-span-5 space-y-6">
-          <Card title="How to Get More Spins" subtitle="Never run out of lucky wheel chances">
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center flex-shrink-0">
-                  <Zap size={18} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[var(--text-primary)]">Exchange Energy for Spins</h4>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">Complete Shortlinks to earn Energy. 100 Energy = 1 Free Spin.</p>
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="mt-2 text-xs py-1"
-                    onClick={() => {
-                      setSpinsLeft(prev => prev + 1);
-                      alert('Exchanged 100 Energy for 1 Free Spin!');
-                    }}
-                  >
-                    Exchange 100 Energy ⚡
-                  </Button>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0">
-                  <Trophy size={18} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[var(--text-primary)]">Upgrade VIP Level</h4>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">VIP members get up to 15 free daily spins automatically refreshed every day at 00:00 UTC.</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Recent Wins */}
-          <Card title="Your Recent Spins" subtitle="Recent prizes won on the wheel">
-            <div className="space-y-2">
-              {history.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-2.5 rounded-xl bg-[var(--background)] text-xs">
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={14} className="text-amber-500" />
-                    <span className="font-bold text-[var(--text-primary)]">{item.prize}</span>
+            {/* Left: Reward Previews */}
+            <div className="lg:col-span-3 order-2 lg:order-1 flex flex-col gap-4">
+              <div className="text-xs font-bold tracking-widest text-[#E2DCED]/50 uppercase mb-2">Today's Possible Rewards</div>
+              
+              {[
+                { label: 'BTC', amount: '0.0001 BTC', chance: '2%' },
+                { label: 'ETH', amount: '0.001 ETH', chance: '5%' },
+                { label: 'USDT', amount: '50 USDT', chance: '10%' },
+                { label: 'POINTS', amount: '500 Points', chance: '20%' },
+              ].map((reward, i) => (
+                <div key={i} className="bg-gradient-to-r from-[#151736] to-[#1e224f] border border-[#234398]/30 p-4 rounded-xl flex items-center justify-between group hover:border-[#234398] transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#25275E] border border-white/5 flex items-center justify-center">
+                      <Hexagon className="w-5 h-5 text-[#E2DCED]" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-[#E2DCED]/60 font-semibold">{reward.label}</div>
+                      <div className="text-sm font-bold">{reward.amount}</div>
+                    </div>
                   </div>
-                  <span className="text-[11px] text-[var(--text-muted)]">{formatDateTime(item.time)}</span>
+                  <div className="text-xs font-mono text-[#234398] bg-[#234398]/10 px-2 py-1 rounded">
+                    {reward.chance}
+                  </div>
                 </div>
               ))}
             </div>
-          </Card>
+
+            {/* 3. MAIN SPIN AREA */}
+            <div className="lg:col-span-6 order-1 lg:order-2 flex justify-center">
+              <div className="relative w-[320px] h-[320px] sm:w-[450px] sm:h-[450px] flex items-center justify-center">
+                
+                {/* Side Lighting Animation Ring */}
+                <div className="absolute inset-0 rounded-full edge-light opacity-60"></div>
+                
+                {/* Outer Glass Ring */}
+                <div className="absolute inset-2 sm:inset-4 rounded-full border border-white/20 shadow-[0_0_50px_rgba(35,67,152,0.3)] bg-[#151736]/40 backdrop-blur-md p-3 sm:p-4 z-10">
+                  
+                  {/* The Wheel */}
+                  <div 
+                    className="w-full h-full rounded-full border border-white/5 relative overflow-hidden reward-engine-spin shadow-inner bg-[#0f1123]"
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                  >
+                    {/* Render Segments using SVG for precise borders */}
+                    <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0 -rotate-90">
+                      {segments.map((seg, i) => {
+                        const deg = 360 / segments.length;
+                        const strokeDasharray = `${(deg / 360) * 314.159} 314.159`;
+                        const strokeDashoffset = `-${(i * deg / 360) * 314.159}`;
+                        const isPrimary = seg.color.includes('234398');
+                        
+                        return (
+                          <circle
+                            key={i}
+                            cx="50" cy="50" r="50"
+                            fill="transparent"
+                            stroke={isPrimary ? '#234398' : (i % 2 === 0 ? '#1e224f' : '#151736')}
+                            strokeWidth="100"
+                            strokeDasharray={strokeDasharray}
+                            strokeDashoffset={strokeDashoffset}
+                            className="transition-all duration-300"
+                          />
+                        );
+                      })}
+                    </svg>
+
+                    {/* Segment Labels */}
+                    {segments.map((seg, i) => {
+                      const deg = (360 / segments.length);
+                      const angle = (i * deg) + (deg / 2);
+                      return (
+                        <div 
+                          key={i}
+                          className="absolute top-1/2 left-1/2 w-1/2 h-8 -mt-4 origin-left flex items-center justify-end pr-6 sm:pr-10 pointer-events-none"
+                          style={{ transform: `rotate(${angle}deg)` }}
+                        >
+                          <span className={`text-[10px] sm:text-xs font-bold tracking-wider ${seg.text} whitespace-nowrap`}>
+                            {seg.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Inner Glass Overlay */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/0 via-white/5 to-white/0"></div>
+                  </div>
+                </div>
+
+                {/* 4. UNIQUE POINTER */}
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
+                  <div className={`w-6 h-6 rotate-45 border border-blue-400 bg-[#25275E] shadow-[0_0_15px_rgba(110,150,255,0.6)] flex items-center justify-center ${isSpinning ? 'magnetic-pointer-active' : ''}`}>
+                    <div className="w-2 h-2 rounded-full bg-blue-300"></div>
+                  </div>
+                  <div className="w-0.5 h-6 bg-gradient-to-b from-blue-400 to-transparent"></div>
+                </div>
+
+                {/* Center Button */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 bg-[#0a0c1a] rounded-full border-4 border-[#25275E] flex flex-col items-center justify-center shadow-2xl relative">
+                    <div className="absolute inset-0 rounded-full bg-[#234398] opacity-20 blur-md"></div>
+                    <button
+                      onClick={handleSpin}
+                      disabled={isSpinning || spinsLeft <= 0}
+                      className="relative z-10 flex flex-col items-center transition-transform hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:opacity-80 group cursor-pointer"
+                    >
+                      <span className="text-2xl font-black text-white tracking-widest group-hover:text-blue-300 transition-colors drop-shadow-md">
+                        SPIN
+                      </span>
+                      <span className="text-[10px] font-medium text-[#E2DCED]/60 mt-1 tracking-wide uppercase text-center leading-tight">
+                        {spinsLeft} Free Spin<br/>Available
+                      </span>
+                    </button>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+
+            {/* Right: Empty space for balance/alignment or extra stats */}
+            <div className="lg:col-span-3 order-3 hidden lg:flex flex-col gap-4">
+               <div className="bg-[#151736]/80 border border-white/5 rounded-xl p-6 text-center">
+                 <Diamond className="w-8 h-8 text-[#E2DCED]/40 mx-auto mb-3" />
+                 <h4 className="font-semibold text-white mb-1">Premium Engine</h4>
+                 <p className="text-xs text-[#E2DCED]/60">Provably fair Web3 algorithms ensure complete transparency.</p>
+               </div>
+            </div>
+
+          </div>
+        ) : (
+          /* 9. EMPTY / LIMIT STATE */
+          <div className="max-w-2xl mx-auto bg-[#151736]/50 border border-white/10 rounded-2xl p-12 text-center backdrop-blur-sm mb-20 shadow-2xl">
+            <div className="w-20 h-20 bg-[#25275E] rounded-full flex items-center justify-center border border-white/10 mx-auto mb-6">
+              <Clock className="w-10 h-10 text-[#E2DCED]/60" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3">Daily Spins Completed</h3>
+            <p className="text-[#E2DCED]/70 mb-8 max-w-md mx-auto">
+              You’ve used all your spins for today. Return tomorrow for another chance to unlock premium crypto rewards.
+            </p>
+            <div className="inline-flex items-center bg-[#0a0c1a] border border-white/5 px-6 py-3 rounded-lg mb-8">
+              <span className="text-sm font-medium text-[#E2DCED]/60 mr-3">Next spin available in</span>
+              <span className="font-mono text-xl font-bold text-[#234398]">04:32:18</span>
+            </div>
+            <div>
+              <button className="bg-[#234398] hover:bg-[#1a3174] text-white font-semibold py-3 px-8 rounded-xl transition-colors shadow-lg">
+                View Rewards
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 6. SPIN INFORMATION PANEL */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          <div className="bg-[#151736]/40 border border-white/5 p-5 rounded-xl text-center backdrop-blur-sm">
+            <div className="text-[11px] font-bold tracking-widest uppercase text-[#E2DCED]/50 mb-1">Daily Spins</div>
+            <div className="text-2xl font-light font-mono text-white">01 / 03</div>
+          </div>
+          <div className="bg-[#151736]/40 border border-white/5 p-5 rounded-xl text-center backdrop-blur-sm">
+            <div className="text-[11px] font-bold tracking-widest uppercase text-[#E2DCED]/50 mb-1">Next Spin</div>
+            <div className="text-2xl font-light font-mono text-white">04:32:18</div>
+          </div>
+          <div className="bg-[#151736]/40 border border-white/5 p-5 rounded-xl text-center backdrop-blur-sm">
+            <div className="text-[11px] font-bold tracking-widest uppercase text-[#E2DCED]/50 mb-1">Today's Earnings</div>
+            <div className="text-2xl font-light font-mono text-[#234398]">$12.50</div>
+          </div>
+          <div className="bg-[#151736]/40 border border-white/5 p-5 rounded-xl text-center backdrop-blur-sm">
+            <div className="text-[11px] font-bold tracking-widest uppercase text-[#E2DCED]/50 mb-1">Total Spins</div>
+            <div className="text-2xl font-light font-mono text-white">128</div>
+          </div>
         </div>
+
+        {/* 7. RECENT WINNERS & 10. HOW IT WORKS */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          
+          <div className="lg:col-span-1 bg-[#151736]/40 border border-white/5 rounded-xl p-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-[#E2DCED]/70 mb-5">Recent Rewards</h3>
+            <div className="space-y-4">
+              {[
+                { user: '0x7F...92A1', reward: '+25 USDT', time: 'Just now' },
+                { user: '0xA2...71BC', reward: '+500 Points', time: '2 min ago' },
+                { user: '0x93...11FD', reward: '+0.001 ETH', time: '5 min ago' },
+                { user: '0x4B...33E9', reward: '+10 USDT', time: '12 min ago' },
+              ].map((w, i) => (
+                <div key={i} className="flex items-center justify-between group">
+                  <div>
+                    <div className="font-mono text-sm text-white/90">{w.user}</div>
+                    <div className="text-[10px] text-[#E2DCED]/50">{w.time}</div>
+                  </div>
+                  <div className="font-semibold text-[#234398] text-sm bg-[#234398]/10 px-2 py-1 rounded">
+                    {w.reward}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 bg-[#151736]/40 border border-white/5 rounded-xl p-8">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-[#E2DCED]/70 mb-8 text-center md:text-left">
+              How Spin & Earn Works
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+              {/* Desktop Connecting Line */}
+              <div className="hidden md:block absolute top-6 left-10 right-10 h-px bg-gradient-to-r from-transparent via-[#234398] to-transparent opacity-50"></div>
+              
+              {[
+                { step: '01', title: 'Get a Spin', icon: Target },
+                { step: '02', title: 'Spin Engine', icon: Zap },
+                { step: '03', title: 'Win Crypto', icon: Trophy },
+                { step: '04', title: 'Wallet Auto-Fill', icon: CheckCircle2 },
+              ].map((item, i) => (
+                <div key={i} className="relative flex flex-col items-center md:items-start text-center md:text-left z-10">
+                  <div className="w-12 h-12 rounded-full bg-[#1e224f] border border-[#234398]/50 flex items-center justify-center mb-4 shadow-lg mx-auto md:mx-0">
+                    <item.icon className="w-5 h-5 text-blue-300" />
+                  </div>
+                  <div className="text-[10px] font-bold text-[#234398] mb-1 font-mono">{item.step}</div>
+                  <div className="text-sm font-semibold text-white/90">{item.title}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Win Modal */}
-      <Modal
-        isOpen={winModalOpen}
-        onClose={() => setWinModalOpen(false)}
-        title="🎉 Lucky Spin Winner!"
-        maxWidth="max-w-sm"
-      >
-        <div className="text-center space-y-4 py-3">
-          <div className="w-20 h-20 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner animate-bounce">
-            <Sparkles size={40} />
+      {/* 8. SPIN RESULT MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-[#000000]/60 animate-in fade-in duration-300 overflow-hidden">
+          
+          {/* Confetti */}
+          {confetti.map(c => (
+            <div 
+              key={c.id} 
+              className="confetti-piece z-50"
+              style={{
+                left: c.left,
+                backgroundColor: c.color,
+                animationDelay: c.delay,
+              }}
+            ></div>
+          ))}
+
+          <div className="bg-[#151736] border border-[#234398]/50 rounded-2xl p-8 sm:p-12 text-center max-w-sm w-full relative overflow-hidden shadow-[0_0_100px_rgba(35,67,152,0.4)] animate-in zoom-in-95 duration-300 z-10">
+            
+            {/* Modal Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#234398] rounded-full blur-[80px] opacity-30"></div>
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 bg-[#25275E] rounded-full border border-blue-400/30 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Trophy className="w-8 h-8 text-blue-400" />
+              </div>
+              
+              <h3 className="text-sm font-bold tracking-widest text-[#E2DCED]/60 uppercase mb-2">Congratulations</h3>
+              <div className="text-4xl font-black text-white mb-3 drop-shadow-md">{wonReward}</div>
+              <p className="text-sm text-[#E2DCED]/70 mb-8 font-light">
+                Your reward has been added to your wallet securely.
+              </p>
+              
+              <div className="space-y-3">
+                <button 
+                  onClick={() => setShowModal(false)}
+                  className="w-full bg-[#234398] hover:bg-[#1a3174] text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-lg"
+                >
+                  Claim Reward
+                </button>
+                <button 
+                  onClick={() => setShowModal(false)}
+                  className="w-full bg-transparent border border-white/10 hover:bg-white/5 text-white/80 font-medium py-3 px-6 rounded-xl transition-colors"
+                >
+                  View Wallet
+                </button>
+              </div>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-[var(--text-secondary)] uppercase font-semibold">You Won</p>
-            <h3 className="text-2xl font-black text-[var(--text-primary)] mt-1">{wonPrize?.label}</h3>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Reward has been credited to your balance. Spin again or come back tomorrow for more free tokens!
-          </p>
-          <Button variant="primary" className="w-full font-bold" onClick={() => setWinModalOpen(false)}>
-            Collect Prize & Continue
-          </Button>
         </div>
-      </Modal>
+      )}
+
     </div>
   );
 };

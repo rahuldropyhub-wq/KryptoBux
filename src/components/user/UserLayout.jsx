@@ -1,21 +1,11 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '@/components/user/Sidebar';
-import Topbar from '@/components/user/Topbar';
+import DashboardLayout from '../layout/DashboardLayout';
 
-const UserLayout = ({ title = '', subtitle = '' }) => {
+const UserLayout = () => {
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <Sidebar />
-      <Topbar title={title} subtitle={subtitle} />
-      <main
-        className="page-content"
-        style={{ paddingTop: 'var(--topbar-height)' }}
-      >
-        <div className="page-inner">
-          <Outlet />
-        </div>
-      </main>
-    </div>
+    <DashboardLayout>
+      <Outlet />
+    </DashboardLayout>
   );
 };
 
